@@ -1,0 +1,173 @@
+-- =============================================================================
+-- SigmaBuilder — init.sql
+-- PostgreSQL 17
+--
+-- Este script se ejecuta automáticamente al inicializar el contenedor Docker.
+-- Orden: extensiones → tipos → tablas → funciones → índices → seeds
+-- =============================================================================
+
+-- ─── Extensiones ─────────────────────────────────────────────────────────────
+-- Usamos pgcrypto para generar IDs aleatorios (UUIDs).
+CREATE EXTENSION IF NOT EXISTS "pgcrypto"; -- gen_random_uuid()
+
+-- ─── Tablas ──────────────────────────────────────────────────────────────────
+-- users
+CREATE TABLE IF NOT EXISTS users (
+  id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         VARCHAR(255) NOT NULL UNIQUE,
+  password_hash TEXT         NOT NULL,
+  first_name    VARCHAR(100) NOT NULL,
+  last_name     VARCHAR(100) NOT NULL,
+  avatar_url    TEXT,
+  is_active     BOOLEAN      NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- projects
+CREATE TABLE IF NOT EXISTS projects (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        VARCHAR(255) NOT NULL,
+  api_key     UUID         NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  description TEXT,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- roles
+CREATE TABLE IF NOT EXISTS roles (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT
+);
+
+-- permissions
+CREATE TABLE IF NOT EXISTS permissions (
+  id     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  action VARCHAR(100) NOT NULL UNIQUE -- Formato: recurso:acción
+);
+
+-- role_permissions
+CREATE TABLE IF NOT EXISTS role_permissions (
+  role_id       UUID NOT NULL REFERENCES roles(id)       ON DELETE CASCADE,
+  permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+  PRIMARY KEY (role_id, permission_id)
+);
+
+-- project_members
+CREATE TABLE IF NOT EXISTS project_members (
+  project_id UUID        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id    UUID        NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
+  role_id    UUID        REFERENCES roles(id)             ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (project_id, user_id)
+);
+
+-- refresh_tokens
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash   TEXT        NOT NULL UNIQUE,
+  family       UUID        NOT NULL,
+  is_revoked   BOOLEAN     NOT NULL DEFAULT false,
+  user_agent   TEXT,
+  ip_address   INET,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at   TIMESTAMPTZ NOT NULL,
+  last_used_at TIMESTAMPTZ
+);
+
+-- ─── Índices ──────────────────────────────────────────────────────────────────
+-- Se crean índices para mejorar el rendimiento de las consultas.
+
+-- refresh_tokens: búsqueda por hash (login/logout) y por user (revocar familia)
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash  ON refresh_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id     ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_family      ON refresh_tokens(family);
+
+-- project_members: lookup por usuario o por proyecto
+CREATE INDEX IF NOT EXISTS idx_project_members_user_id    ON project_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_project_members_project_id ON project_members(project_id);
+
+-- ─── Funciones ─────────────────────────────────────────────────────────────
+-- Se crean funciones para mejorar el rendimiento de las consultas.
+
+-- Devuelve todos los permisos (action) de un usuario en un proyecto.
+CREATE OR REPLACE FUNCTION get_user_permissions(p_user_id UUID, p_project_id UUID)
+RETURNS TABLE(action VARCHAR) AS $$
+  SELECT  perm.action
+  FROM    project_members proj_member
+  JOIN    role_permissions role_perm ON role_perm.role_id  = proj_member.role_id
+  JOIN    permissions      perm      ON perm.id            = role_perm.permission_id
+  WHERE   proj_member.user_id    = p_user_id
+  AND     proj_member.project_id = p_project_id;
+$$ LANGUAGE sql STABLE;
+
+-- Actualiza updated_at automáticamente en la tabla users
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_users_updated_at
+  BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- ─── Seeds ──────────────────────────────────────────────────────────────────
+-- permissions 
+INSERT INTO permissions (action) VALUES
+  ('project:read'),
+  ('project:update'),
+  ('project:delete'),
+  ('members:read'),
+  ('members:invite'),
+  ('members:update'),
+  ('members:remove'),
+  ('roles:read'),
+  ('roles:manage')
+ON CONFLICT (action) DO NOTHING;
+
+-- roles
+INSERT INTO roles (name, description) VALUES
+  ('owner',  'Full control over the project, including deletion and role management'),
+  ('admin',  'Can manage members and project settings, but cannot delete the project'),
+  ('member', 'Read-only access to project resources')
+ON CONFLICT (name) DO NOTHING;
+
+-- roles_permissions 
+-- owner
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT role.id, perm.id
+FROM   roles role, permissions perm
+WHERE  role.name = 'owner'
+ON CONFLICT DO NOTHING;
+
+-- admin
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT role.id, perm.id
+FROM   roles role
+JOIN   permissions perm ON perm.action IN (
+  'project:read',
+  'project:update',
+  'members:read',
+  'members:invite',
+  'members:update',
+  'members:remove',
+  'roles:read'
+)
+WHERE  role.name = 'admin'
+ON CONFLICT DO NOTHING;
+
+-- member
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT role.id, perm.id
+FROM   roles role
+JOIN   permissions perm ON perm.action IN (
+  'project:read',
+  'members:read',
+  'roles:read'
+)
+WHERE  role.name = 'member'
+ON CONFLICT DO NOTHING;
