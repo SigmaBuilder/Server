@@ -1,0 +1,28 @@
+/* Rutas de auth. */
+
+'use strict';
+
+const { Router } = require('express');
+
+const controller = require('./auth.controller');
+
+const { registerRules, loginRules } = require('./auth.validator');
+
+const validate = require('../../../middlewares/validate');
+const authenticate = require('../../../middlewares/authenticate');
+const { authRateLimiter } = require('../../../middlewares/rateLimiter');
+
+const router = Router();
+
+// Rutas públicas
+router.post('/register', authRateLimiter, registerRules, validate, controller.register);
+router.post('/login',    authRateLimiter, loginRules,    validate, controller.login);
+router.post('/refresh',  authRateLimiter, controller.refresh);
+
+// Rutas protegidas
+router.post('/logout',     authenticate, controller.logout);
+router.post('/logout-all', authenticate, controller.logoutAll);
+router.get('/me',          authenticate, controller.getMe);
+router.get('/sessions',    authenticate, controller.getSessions);
+
+module.exports = router;
