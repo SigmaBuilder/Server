@@ -1,0 +1,38 @@
+{
+  "name": "sigma-builder-server",
+  "version": "0.0.1-alpha.1",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SigmaBuilder/Server.git"
+  },
+  "keywords": [],
+  "author": "Rubén Morales & Diego Puértolas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SigmaBuilder/Server/issues"
+  },
+  "homepage": "https://github.com/SigmaBuilder/Server#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "knex": "^3.2.9",
+    "pg": "^8.20.0",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
