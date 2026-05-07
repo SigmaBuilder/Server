@@ -188,15 +188,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Triggers para actualizar updated_at automáticamente
+
+-- users
 CREATE OR REPLACE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- sites
 CREATE OR REPLACE TRIGGER trg_sites_updated_at
   BEFORE UPDATE ON sites
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- portfolio_items
 CREATE OR REPLACE TRIGGER trg_portfolio_items_updated_at
   BEFORE UPDATE ON portfolio_items
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- blog_posts
 CREATE OR REPLACE TRIGGER trg_blog_posts_updated_at
   BEFORE UPDATE ON blog_posts
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
