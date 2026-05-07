@@ -68,6 +68,15 @@ CREATE TABLE IF NOT EXISTS portfolio_stack (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- blog_categories
+CREATE TABLE IF NOT EXISTS blog_categories (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name        VARCHAR(100) NOT NULL, 
+  slug        VARCHAR(100) NOT NULL UNIQUE,
+  UNIQUE (project_id, slug)
+);
+
 -- roles
 CREATE TABLE IF NOT EXISTS roles (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
