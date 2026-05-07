@@ -147,6 +147,10 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_family      ON refresh_tokens(fami
 CREATE INDEX IF NOT EXISTS idx_project_members_user_id    ON project_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_project_members_project_id ON project_members(project_id);
 
+-- sites: lookup por slug
+CREATE INDEX IF NOT EXISTS idx_sites_slug ON sites(slug);
+
+
 -- ─── Funciones ─────────────────────────────────────────────────────────────
 -- Se crean funciones para mejorar el rendimiento de las consultas.
 
