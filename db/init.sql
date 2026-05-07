@@ -33,6 +33,68 @@ CREATE TABLE IF NOT EXISTS projects (
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- sites
+CREATE TABLE IF NOT EXISTS sites (
+  id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id    UUID         NOT NULL UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+  slug          VARCHAR(255) UNIQUE,
+  template_type VARCHAR(50)  NOT NULL,  
+  features      JSONB        NOT NULL DEFAULT '{}'::jsonb,
+  content       JSONB        NOT NULL DEFAULT '{}'::jsonb,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- portfolio
+CREATE TABLE IF NOT EXISTS portfolio_items (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title       VARCHAR(255) NOT NULL,
+  description TEXT,
+  image_url   TEXT,
+  live_url    TEXT,
+  repository_url  TEXT,
+  sort_order  INT NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- portfolio_stack
+CREATE TABLE IF NOT EXISTS portfolio_stack (
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name        VARCHAR(100) NOT NULL, 
+  icon_url    TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- blog_categories
+CREATE TABLE IF NOT EXISTS blog_categories (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name        VARCHAR(100) NOT NULL, 
+  slug        VARCHAR(100) NOT NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  UNIQUE (project_id, slug)
+);
+
+-- blog_posts
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id   UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  author_id    UUID         NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  category_id  UUID         REFERENCES blog_categories(id) ON DELETE SET NULL,
+  title        VARCHAR(255) NOT NULL,
+  slug         VARCHAR(255) NOT NULL,
+  content      TEXT         NOT NULL, 
+  is_published BOOLEAN      NOT NULL DEFAULT false,
+  created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  UNIQUE(project_id, slug)
+);
+
 -- roles
 CREATE TABLE IF NOT EXISTS roles (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,6 +150,21 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_family      ON refresh_tokens(fami
 CREATE INDEX IF NOT EXISTS idx_project_members_user_id    ON project_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_project_members_project_id ON project_members(project_id);
 
+-- sites: lookup por slug
+CREATE INDEX IF NOT EXISTS idx_sites_slug ON sites(slug);
+
+-- blog_posts: lookup por proyecto
+CREATE INDEX IF NOT EXISTS idx_blog_posts_project ON blog_posts(project_id);
+
+-- portfolio_items: lookup por proyecto
+CREATE INDEX IF NOT EXISTS idx_portfolio_items_project ON portfolio_items(project_id);
+
+-- portfolio_stack: lookup por proyecto
+CREATE INDEX IF NOT EXISTS idx_portfolio_stack_project ON portfolio_stack(project_id);
+
+-- blog_categories: lookup por proyecto
+CREATE INDEX IF NOT EXISTS idx_blog_categories_project ON blog_categories(project_id);
+
 -- ─── Funciones ─────────────────────────────────────────────────────────────
 -- Se crean funciones para mejorar el rendimiento de las consultas.
 
@@ -111,8 +188,32 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Triggers para actualizar updated_at automáticamente
+
+-- users
 CREATE OR REPLACE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- sites
+CREATE OR REPLACE TRIGGER trg_sites_updated_at
+  BEFORE UPDATE ON sites
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- portfolio_items
+CREATE OR REPLACE TRIGGER trg_portfolio_items_updated_at
+  BEFORE UPDATE ON portfolio_items
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- blog_posts
+CREATE OR REPLACE TRIGGER trg_blog_posts_updated_at
+  BEFORE UPDATE ON blog_posts
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE TRIGGER trg_portfolio_stack_updated_at
+  BEFORE UPDATE ON portfolio_stack
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE TRIGGER trg_blog_categories_updated_at
+  BEFORE UPDATE ON blog_categories
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- ─── Seeds ──────────────────────────────────────────────────────────────────
