@@ -200,6 +200,12 @@ CREATE OR REPLACE TRIGGER trg_portfolio_items_updated_at
 CREATE OR REPLACE TRIGGER trg_blog_posts_updated_at
   BEFORE UPDATE ON blog_posts
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE TRIGGER trg_portfolio_stack_updated_at
+  BEFORE UPDATE ON portfolio_stack
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE OR REPLACE TRIGGER trg_blog_categories_updated_at
+  BEFORE UPDATE ON blog_categories
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- ─── Seeds ──────────────────────────────────────────────────────────────────
 -- permissions 
