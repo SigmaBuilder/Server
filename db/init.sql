@@ -150,6 +150,10 @@ CREATE INDEX IF NOT EXISTS idx_project_members_project_id ON project_members(pro
 -- sites: lookup por slug
 CREATE INDEX IF NOT EXISTS idx_sites_slug ON sites(slug);
 
+-- blog_posts: lookup por proyecto
+CREATE INDEX IF NOT EXISTS idx_blog_posts_project ON blog_posts(project_id);
+
+
 
 -- ─── Funciones ─────────────────────────────────────────────────────────────
 -- Se crean funciones para mejorar el rendimiento de las consultas.
