@@ -65,7 +65,8 @@ CREATE TABLE IF NOT EXISTS portfolio_stack (
   project_id  UUID        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name        VARCHAR(100) NOT NULL, 
   icon_url    TEXT,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- blog_categories
@@ -74,6 +75,8 @@ CREATE TABLE IF NOT EXISTS blog_categories (
   project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name        VARCHAR(100) NOT NULL, 
   slug        VARCHAR(100) NOT NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
   UNIQUE (project_id, slug)
 );
 
