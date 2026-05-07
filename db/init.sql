@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS portfolio_items (
   description TEXT,
   image_url   TEXT,
   live_url    TEXT,
-  github_url  TEXT,
+  repository_url  TEXT,
   sort_order  INT NOT NULL DEFAULT 0,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
