@@ -77,6 +77,21 @@ CREATE TABLE IF NOT EXISTS blog_categories (
   UNIQUE (project_id, slug)
 );
 
+-- blog_posts
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id   UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  author_id    UUID         NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  category_id  UUID         REFERENCES blog_categories(id) ON DELETE SET NULL,
+  title        VARCHAR(255) NOT NULL,
+  slug         VARCHAR(255) NOT NULL,
+  content      TEXT         NOT NULL, 
+  is_published BOOLEAN      NOT NULL DEFAULT false,
+  created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  UNIQUE(project_id, slug)
+);
+
 -- roles
 CREATE TABLE IF NOT EXISTS roles (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
