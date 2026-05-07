@@ -176,7 +176,7 @@ CREATE OR REPLACE TRIGGER trg_users_updated_at
 CREATE OR REPLACE TRIGGER trg_sites_updated_at
   BEFORE UPDATE ON sites
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-CREATE OR REPLACE TRIGGER trg_portfolio_items_updates_at
+CREATE OR REPLACE TRIGGER trg_portfolio_items_updated_at
   BEFORE UPDATE ON portfolio_items
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE OR REPLACE TRIGGER trg_blog_posts_updated_at
