@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS portfolio_items (
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- portfolio_stack
 CREATE TABLE IF NOT EXISTS portfolio_stack (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id  UUID        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
