@@ -45,6 +45,20 @@ CREATE TABLE IF NOT EXISTS sites (
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- portfolio
+CREATE TABLE IF NOT EXISTS portfolio_items (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title       VARCHAR(255) NOT NULL,
+  description TEXT,
+  image_url   TEXT,
+  live_url    TEXT,
+  github_url  TEXT,
+  sort_order  INT NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
 -- roles
 CREATE TABLE IF NOT EXISTS roles (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
