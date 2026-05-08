@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS projects (
 -- sites
 CREATE TABLE IF NOT EXISTS sites (
   id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id    UUID         NOT NULL UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+  project_id    UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   slug          VARCHAR(255) UNIQUE,
   template_type VARCHAR(50)  NOT NULL,  
   features      JSONB        NOT NULL DEFAULT '{}'::jsonb,
