@@ -24,6 +24,16 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- password_reset_tokens
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash  TEXT         NOT NULL UNIQUE,
+  is_used     BOOLEAN      NOT NULL DEFAULT false,
+  expires_at  TIMESTAMPTZ  NOT NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
 -- projects
 CREATE TABLE IF NOT EXISTS projects (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
