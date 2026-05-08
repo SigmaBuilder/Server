@@ -252,6 +252,11 @@ CREATE OR REPLACE TRIGGER trg_blog_categories_updated_at
   BEFORE UPDATE ON blog_categories
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+-- project_invitations
+CREATE OR REPLACE TRIGGER trg_project_invitations_updated_at
+  BEFORE UPDATE ON project_invitations
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
 -- ─── Seeds ──────────────────────────────────────────────────────────────────
 -- permissions 
 INSERT INTO permissions (action) VALUES
