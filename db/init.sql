@@ -156,17 +156,17 @@ CREATE INDEX IF NOT EXISTS idx_sites_slug ON sites(slug);
 -- sites: lookup por project_id
 CREATE INDEX IF NOT EXISTS idx_sites_project_id ON sites(project_id);
 
--- blog_posts: lookup por proyecto
-CREATE INDEX IF NOT EXISTS idx_blog_posts_project ON blog_posts(project_id);
+-- portfolio_items: lookup por sitio
+CREATE INDEX IF NOT EXISTS idx_portfolio_items_site_id ON portfolio_items(site_id);
 
--- portfolio_items: lookup por proyecto
-CREATE INDEX IF NOT EXISTS idx_portfolio_items_project ON portfolio_items(project_id);
+-- portfolio_stack: lookup por sitio
+CREATE INDEX IF NOT EXISTS idx_portfolio_stack_site_id ON portfolio_stack(site_id);
 
--- portfolio_stack: lookup por proyecto
-CREATE INDEX IF NOT EXISTS idx_portfolio_stack_project ON portfolio_stack(project_id);
+-- blog_categories: lookup por sitio
+CREATE INDEX IF NOT EXISTS idx_blog_categories_site_id ON blog_categories(site_id);
 
--- blog_categories: lookup por proyecto
-CREATE INDEX IF NOT EXISTS idx_blog_categories_project ON blog_categories(project_id);
+-- blog_posts: lookup por sitio
+CREATE INDEX IF NOT EXISTS idx_blog_posts_site_id ON blog_posts(site_id);
 
 -- ─── Funciones ─────────────────────────────────────────────────────────────
 -- Se crean funciones para mejorar el rendimiento de las consultas.
