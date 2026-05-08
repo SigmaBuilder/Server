@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS projects (
 -- sites
 CREATE TABLE IF NOT EXISTS sites (
   id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id    UUID         NOT NULL UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+  project_id    UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   slug          VARCHAR(255) UNIQUE,
   template_type VARCHAR(50)  NOT NULL,  
   features      JSONB        NOT NULL DEFAULT '{}'::jsonb,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS sites (
 -- portfolio
 CREATE TABLE IF NOT EXISTS portfolio_items (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  site_id     UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   title       VARCHAR(255) NOT NULL,
   description TEXT,
   image_url   TEXT,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS portfolio_items (
 -- portfolio_stack
 CREATE TABLE IF NOT EXISTS portfolio_stack (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id  UUID        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  site_id     UUID        NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   name        VARCHAR(100) NOT NULL, 
   icon_url    TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -72,18 +72,18 @@ CREATE TABLE IF NOT EXISTS portfolio_stack (
 -- blog_categories
 CREATE TABLE IF NOT EXISTS blog_categories (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  site_id     UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   name        VARCHAR(100) NOT NULL, 
   slug        VARCHAR(100) NOT NULL,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  UNIQUE (project_id, slug)
+  UNIQUE (site_id, slug)
 );
 
 -- blog_posts
 CREATE TABLE IF NOT EXISTS blog_posts (
   id           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  site_id      UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   author_id    UUID         NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
   category_id  UUID         REFERENCES blog_categories(id) ON DELETE SET NULL,
   title        VARCHAR(255) NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   is_published BOOLEAN      NOT NULL DEFAULT false,
   created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  UNIQUE(project_id, slug)
+  UNIQUE(site_id, slug)
 );
 
 -- roles
