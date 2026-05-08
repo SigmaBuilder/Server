@@ -134,6 +134,20 @@ CREATE TABLE IF NOT EXISTS project_members (
   PRIMARY KEY (project_id, user_id)
 );
 
+-- project_invitations
+CREATE TABLE IF NOT EXISTS project_invitations (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  inviter_id  UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  email       VARCHAR(255) NOT NULL,
+  role_id     UUID         NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  token       VARCHAR(255) NOT NULL UNIQUE,
+  status      VARCHAR(50)  NOT NULL DEFAULT 'pending',
+  expires_at  TIMESTAMPTZ  NOT NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
 -- refresh_tokens
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
