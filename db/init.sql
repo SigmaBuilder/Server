@@ -153,6 +153,9 @@ CREATE INDEX IF NOT EXISTS idx_project_members_project_id ON project_members(pro
 -- sites: lookup por slug
 CREATE INDEX IF NOT EXISTS idx_sites_slug ON sites(slug);
 
+-- sites: lookup por project_id
+CREATE INDEX IF NOT EXISTS idx_sites_project_id ON sites(project_id);
+
 -- blog_posts: lookup por proyecto
 CREATE INDEX IF NOT EXISTS idx_blog_posts_project ON blog_posts(project_id);
 
