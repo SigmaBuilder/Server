@@ -14,6 +14,7 @@ const authorize     = require('../../../middlewares/authorize');
 
 // Sub-rutas
 const membersRouter = require('../members/members.routes');
+const sitesRouter   = require('./sites/sites.routes');
 
 const router = Router();
 
@@ -27,7 +28,8 @@ router.get('/:projectId', authorize('project:read'), controller.getOne);
 router.patch('/:projectId', authorize('project:update'), updateProjectRules, validate, controller.update);
 router.delete('/:projectId', authorize('project:delete'), controller.remove);
 
-// Delegar sub-rutas de miembros
+// Delegar sub-rutas de miembros y sitios
 router.use('/:projectId/members', membersRouter);
+router.use('/:projectId/sites',   sitesRouter);
 
 module.exports = router;
