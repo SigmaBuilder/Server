@@ -134,6 +134,20 @@ CREATE TABLE IF NOT EXISTS project_members (
   PRIMARY KEY (project_id, user_id)
 );
 
+-- project_invitations
+CREATE TABLE IF NOT EXISTS project_invitations (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  inviter_id  UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  email       VARCHAR(255) NOT NULL,
+  role_id     UUID         NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  token       VARCHAR(255) NOT NULL UNIQUE,
+  status      VARCHAR(50)  NOT NULL DEFAULT 'pending',
+  expires_at  TIMESTAMPTZ  NOT NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
 -- refresh_tokens
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -178,12 +192,14 @@ CREATE INDEX IF NOT EXISTS idx_blog_categories_site_id ON blog_categories(site_i
 -- blog_posts: lookup por sitio
 CREATE INDEX IF NOT EXISTS idx_blog_posts_site_id ON blog_posts(site_id);
 
+-- project_invitations: lookup por email
+CREATE INDEX IF NOT EXISTS idx_project_invitations_email  ON project_invitations(email);
+
 -- password_reset_tokens
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token_hash ON password_reset_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_is_used ON password_reset_tokens(is_used);
-
 
 -- ─── Funciones ─────────────────────────────────────────────────────────────
 -- Se crean funciones para mejorar el rendimiento de las consultas.
@@ -234,6 +250,11 @@ CREATE OR REPLACE TRIGGER trg_portfolio_stack_updated_at
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE OR REPLACE TRIGGER trg_blog_categories_updated_at
   BEFORE UPDATE ON blog_categories
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- project_invitations
+CREATE OR REPLACE TRIGGER trg_project_invitations_updated_at
+  BEFORE UPDATE ON project_invitations
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- ─── Seeds ──────────────────────────────────────────────────────────────────
