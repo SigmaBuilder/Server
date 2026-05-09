@@ -7,8 +7,8 @@ const { Router } = require('express');
 const controller = require('./members.controller');
 
 const { addMemberRules, updateMemberRules } = require('./members.validator');
-const validate = require('../../../middlewares/validate');
-const authorize = require('../../../middlewares/authorize');
+const validate = require('../../../../middlewares/validate');
+const authorize = require('../../../../middlewares/authorize');
 
 const router = Router({ mergeParams: true });
 

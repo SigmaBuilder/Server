@@ -3,8 +3,8 @@
 'use strict';
 
 const membersService = require('./members.service');
-const { sendSuccess } = require('../../../utils/response');
-const HTTP_STATUS = require('../../../constants/httpStatus');
+const { sendSuccess } = require('../../../../utils/response');
+const HTTP_STATUS = require('../../../../constants/httpStatus');
 
 /**
  * Obtiene todos los miembros de un proyecto.

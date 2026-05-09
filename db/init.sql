@@ -108,8 +108,10 @@ CREATE TABLE IF NOT EXISTS blog_posts (
 -- roles
 CREATE TABLE IF NOT EXISTS roles (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        VARCHAR(100) NOT NULL UNIQUE,
-  description TEXT
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name        VARCHAR(100) NOT NULL,
+  description TEXT,
+  UNIQUE (project_id, name)
 );
 
 -- permissions

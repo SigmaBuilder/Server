@@ -8,10 +8,10 @@ const controller = require('./roles.controller');
 
 const { createRoleRules, updateRoleRules, setPermissionsRules } = require('./roles.validator');
 
-const validate      = require('../../../middlewares/validate');
-const authenticate  = require('../../../middlewares/authenticate');
+const validate      = require('../../../../middlewares/validate');
+const authenticate  = require('../../../../middlewares/authenticate');
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.use(authenticate);
 
