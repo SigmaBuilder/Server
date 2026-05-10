@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS roles (
   project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name        VARCHAR(100) NOT NULL,
   description TEXT,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
   UNIQUE (project_id, name)
 );
 
