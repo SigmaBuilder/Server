@@ -24,6 +24,15 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- projects
+CREATE TABLE IF NOT EXISTS projects (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        VARCHAR(255) NOT NULL,
+  api_key     UUID         NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  description TEXT,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
 -- password_reset_tokens
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -34,13 +43,64 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
--- projects
-CREATE TABLE IF NOT EXISTS projects (
+-- refresh_tokens
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash   TEXT        NOT NULL UNIQUE,
+  family       UUID        NOT NULL,
+  is_revoked   BOOLEAN     NOT NULL DEFAULT false,
+  user_agent   TEXT,
+  ip_address   INET,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at   TIMESTAMPTZ NOT NULL,
+  last_used_at TIMESTAMPTZ
+);
+
+-- roles
+CREATE TABLE IF NOT EXISTS roles (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        VARCHAR(255) NOT NULL,
-  api_key     UUID         NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  name        VARCHAR(100) NOT NULL,
   description TEXT,
-  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  UNIQUE (project_id, name)
+);
+
+-- permissions
+CREATE TABLE IF NOT EXISTS permissions (
+  id     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  action VARCHAR(100) NOT NULL UNIQUE -- Formato: recurso:acción
+);
+
+-- role_permissions
+CREATE TABLE IF NOT EXISTS role_permissions (
+  role_id       UUID NOT NULL REFERENCES roles(id)       ON DELETE CASCADE,
+  permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+  PRIMARY KEY (role_id, permission_id)
+);
+
+-- project_members
+CREATE TABLE IF NOT EXISTS project_members (
+  project_id UUID        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id    UUID        NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
+  role_id    UUID        REFERENCES roles(id)             ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (project_id, user_id)
+);
+
+-- project_invitations
+CREATE TABLE IF NOT EXISTS project_invitations (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  inviter_id  UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  email       VARCHAR(255) NOT NULL,
+  role_id     UUID         NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  token       VARCHAR(255) NOT NULL UNIQUE,
+  status      VARCHAR(50)  NOT NULL DEFAULT 'pending',
+  expires_at  TIMESTAMPTZ  NOT NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
 -- sites
@@ -103,65 +163,6 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
   UNIQUE(site_id, slug)
-);
-
--- roles
-CREATE TABLE IF NOT EXISTS roles (
-  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  name        VARCHAR(100) NOT NULL,
-  description TEXT,
-  UNIQUE (project_id, name)
-);
-
--- permissions
-CREATE TABLE IF NOT EXISTS permissions (
-  id     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  action VARCHAR(100) NOT NULL UNIQUE -- Formato: recurso:acción
-);
-
--- role_permissions
-CREATE TABLE IF NOT EXISTS role_permissions (
-  role_id       UUID NOT NULL REFERENCES roles(id)       ON DELETE CASCADE,
-  permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
-  PRIMARY KEY (role_id, permission_id)
-);
-
--- project_members
-CREATE TABLE IF NOT EXISTS project_members (
-  project_id UUID        NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  user_id    UUID        NOT NULL REFERENCES users(id)    ON DELETE CASCADE,
-  role_id    UUID        REFERENCES roles(id)             ON DELETE SET NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  PRIMARY KEY (project_id, user_id)
-);
-
--- project_invitations
-CREATE TABLE IF NOT EXISTS project_invitations (
-  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  inviter_id  UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  email       VARCHAR(255) NOT NULL,
-  role_id     UUID         NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  token       VARCHAR(255) NOT NULL UNIQUE,
-  status      VARCHAR(50)  NOT NULL DEFAULT 'pending',
-  expires_at  TIMESTAMPTZ  NOT NULL,
-  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
-);
-
--- refresh_tokens
-CREATE TABLE IF NOT EXISTS refresh_tokens (
-  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id      UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  token_hash   TEXT        NOT NULL UNIQUE,
-  family       UUID        NOT NULL,
-  is_revoked   BOOLEAN     NOT NULL DEFAULT false,
-  user_agent   TEXT,
-  ip_address   INET,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  expires_at   TIMESTAMPTZ NOT NULL,
-  last_used_at TIMESTAMPTZ
 );
 
 -- ─── Índices ──────────────────────────────────────────────────────────────────
