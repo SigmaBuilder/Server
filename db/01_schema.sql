@@ -259,13 +259,13 @@ DECLARE
   v_member_role_id UUID;
 BEGIN
   -- Rol de Owner
-  INSERT INTO roles (project_id, name, description)
-  VALUES (NEW.id, 'Owner', 'Full control over the project, including deletion and role management')
+  INSERT INTO roles (project_id, name, description, super)
+  VALUES (NEW.id, 'Owner', 'Full control over the project, including deletion and role management', true)
   RETURNING id INTO v_owner_role_id;
   
   -- Rol de Admin
-  INSERT INTO roles (project_id, name, description)
-  VALUES (NEW.id, 'Admin', 'Can manage members and project settings, but cannot delete the project')
+  INSERT INTO roles (project_id, name, description, super)
+  VALUES (NEW.id, 'Admin', 'Can manage members and project settings, but cannot delete the project', true)
   RETURNING id INTO v_admin_role_id;
 
   -- Rol de Member
