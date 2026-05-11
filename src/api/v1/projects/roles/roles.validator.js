@@ -20,6 +20,10 @@ const createRoleRules = [
     .optional()
     .isUUID()
     .withMessage('Each permissionId must be a valid UUID'),
+  body('super')
+    .optional()
+    .isBoolean()
+    .withMessage('super must be a boolean'),
 ];
 
 const updateRoleRules = [
