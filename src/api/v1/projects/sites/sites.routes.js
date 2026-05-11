@@ -1,22 +1,35 @@
 /* Rutas de sites. */
 
-'use strict';
+"use strict";
 
-const { Router } = require('express');
+const { Router } = require("express");
 
-const controller = require('./sites.controller');
+const controller = require("./sites.controller");
 
-const { createSiteRules, updateSiteRules } = require('./sites.validator');
+const { createSiteRules, updateSiteRules } = require("./sites.validator");
 
-const validate  = require('../../../../middlewares/validate');
-const authorize = require('../../../../middlewares/authorize');
+const validate = require("../../../../middlewares/validate");
+const authorize = require("../../../../middlewares/authorize");
 
 const router = Router({ mergeParams: true });
 
-router.get('/', authorize('project:read'), controller.getAllSitesByProject);
-router.get('/:siteId', authorize('project:read'), controller.getSiteById);
-router.post('/', authorize('project:update'), createSiteRules, validate, controller.createSite);
-router.patch('/:siteId', authorize('project:update'), updateSiteRules, validate, controller.updateSite);
-router.delete('/:siteId', authorize('project:update'), controller.deleteSite);
+router.get("/", authorize("project:read"), controller.getAllSitesByProject);
+router.get("/slug/:slug", authorize("project:read"), controller.getSiteBySlug);
+router.get("/:siteId", authorize("project:read"), controller.getSiteById);
+router.post(
+  "/",
+  authorize("project:update"),
+  createSiteRules,
+  validate,
+  controller.createSite,
+);
+router.patch(
+  "/:siteId",
+  authorize("project:update"),
+  updateSiteRules,
+  validate,
+  controller.updateSite,
+);
+router.delete("/:siteId", authorize("project:update"), controller.deleteSite);
 
 module.exports = router;
