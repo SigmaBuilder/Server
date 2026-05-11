@@ -36,7 +36,7 @@ const getUserRole = async (userId, projectId) => {
   const row = await db('project_members as proj_mem')
     .join('roles as rol', 'rol.id', 'proj_mem.role_id')
     .where({ 'proj_mem.user_id': userId, 'proj_mem.project_id': projectId })
-    .select('rol.id', 'rol.name', 'rol.description')
+    .select('rol.id', 'rol.name', 'rol.description', 'rol.super')
     .first();
 
   return row ?? null;
