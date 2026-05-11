@@ -9,10 +9,11 @@ const HTTP_STATUS = require('../../../../constants/httpStatus');
 /**
  * Retorna todos los roles con sus permisos asociados.
  */
-const getAllRoles = async () => {
+const getAllRoles = async (projectId) => {
   const roles = await db('roles as r')
     .leftJoin('role_permissions as rp', 'rp.role_id', 'r.id')
     .leftJoin('permissions as p', 'p.id', 'rp.permission_id')
+    .where('r.project_id', projectId)
     .select('r.id', 'r.name', 'r.description', 'r.super', 'p.id as perm_id', 'p.action as perm_action')
     .orderBy('r.name');
 
@@ -42,10 +43,14 @@ const getRoleById = async (roleId) => {
  * Crea un nuevo rol, opcionalmente sembrando sus permisos iniciales.
  * @param {{ name: string, description?: string, permissionIds?: string[] }} dto - Datos del rol.
  */
-const createRole = async ({ name, description, permissionIds = [] }) => {
+const createRole = async (projectId, { name, description, permissionIds = [], super: isSuper = false }, userRole) => {
   try {
+    if (isSuper && (!userRole || !userRole.super)) {
+      throw new AppError('Only super roles can create other super roles', HTTP_STATUS.FORBIDDEN);
+    }
+
     const [role] = await db('roles')
-      .insert({ name, description: description ?? null })
+      .insert({ project_id: projectId, name, description: description ?? null, super: isSuper })
       .returning(['id', 'name', 'description', 'super']);
 
     if (permissionIds.length > 0) {
@@ -66,11 +71,11 @@ const createRole = async ({ name, description, permissionIds = [] }) => {
  * @param {string} roleId - ID del rol.
  * @param {{ name?: string, description?: string }} dto - Datos del rol.
  */
-const updateRole = async (roleId, dto, userPermissions = []) => {
+const updateRole = async (roleId, dto, userRole) => {
   const role = await db('roles').where({ id: roleId }).first();
   if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
-  if (role.super && !userPermissions.includes('project:delete')) {
-    throw new AppError('Requires additional permission (project:delete) to update a super role', HTTP_STATUS.FORBIDDEN);
+  if (role.super && (!userRole || !userRole.super)) {
+    throw new AppError('Only super roles can update other super roles', HTTP_STATUS.FORBIDDEN);
   }
 
   const [updated] = await db('roles')
@@ -86,11 +91,11 @@ const updateRole = async (roleId, dto, userPermissions = []) => {
  * Elimina un rol. Falla si algún miembro del proyecto lo está usando.
  * @param {string} roleId - ID del rol.
  */
-const deleteRole = async (roleId, userPermissions = []) => {
+const deleteRole = async (roleId, userRole) => {
   const role = await db('roles').where({ id: roleId }).first();
   if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
-  if (role.super && !userPermissions.includes('project:delete')) {
-    throw new AppError('Requires additional permission (project:delete) to delete a super role', HTTP_STATUS.FORBIDDEN);
+  if (role.super && (!userRole || !userRole.super)) {
+    throw new AppError('Only super roles can delete other super roles', HTTP_STATUS.FORBIDDEN);
   }
 
   const result = await db('project_members').where({ role_id: roleId }).count('* as count').first();
@@ -111,11 +116,11 @@ const deleteRole = async (roleId, userPermissions = []) => {
  * @param {string} roleId - ID del rol.
  * @param {string[]} permissionIds - IDs de los permisos.
  */
-const setRolePermissions = async (roleId, permissionIds, userPermissions = []) => {
+const setRolePermissions = async (roleId, permissionIds, userRole) => {
   const role = await db('roles').where({ id: roleId }).first();
   if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
-  if (role.super && !userPermissions.includes('project:delete')) {
-    throw new AppError('Requires additional permission (project:delete) to modify permissions of a super role', HTTP_STATUS.FORBIDDEN);
+  if (role.super && (!userRole || !userRole.super)) {
+    throw new AppError('Only super roles can modify permissions of other super roles', HTTP_STATUS.FORBIDDEN);
   }
 
   await db('role_permissions').where({ role_id: roleId }).delete();
