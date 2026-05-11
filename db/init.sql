@@ -10,6 +10,27 @@
 -- Usamos pgcrypto para generar IDs aleatorios (UUIDs).
 CREATE EXTENSION IF NOT EXISTS "pgcrypto"; -- gen_random_uuid()
 
+-- ─── Bloque de Contingencia ──────────────────────────────────────────────────
+-- 1. Eliminamos funciones.
+DROP FUNCTION IF EXISTS get_user_permissions(UUID, UUID) CASCADE;
+DROP FUNCTION IF EXISTS set_updated_at() CASCADE;
+
+-- 2. Eliminamos las tablas.
+DROP TABLE IF EXISTS blog_posts CASCADE;
+DROP TABLE IF EXISTS blog_categories CASCADE;
+DROP TABLE IF EXISTS portfolio_stack CASCADE;
+DROP TABLE IF EXISTS portfolio_items CASCADE;
+DROP TABLE IF EXISTS sites CASCADE;
+DROP TABLE IF EXISTS project_invitations CASCADE;
+DROP TABLE IF EXISTS project_members CASCADE;
+DROP TABLE IF EXISTS role_permissions CASCADE;
+DROP TABLE IF EXISTS permissions CASCADE;
+DROP TABLE IF EXISTS roles CASCADE;
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
+DROP TABLE IF EXISTS password_reset_tokens CASCADE;
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- ─── Tablas ──────────────────────────────────────────────────────────────────
 -- users
 CREATE TABLE IF NOT EXISTS users (
