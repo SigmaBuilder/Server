@@ -10,20 +10,21 @@ const { createRoleRules, updateRoleRules, setPermissionsRules } = require('./rol
 
 const validate      = require('../../../../middlewares/validate');
 const authenticate  = require('../../../../middlewares/authenticate');
+const authorize     = require('../../../../middlewares/authorize');
 
 const router = Router({ mergeParams: true });
 
 router.use(authenticate);
 
-router.get('/permissions', controller.getAllPermissions);
-router.get('/',  controller.getAll);
-router.post('/', createRoleRules, validate, controller.create);
+router.get('/permissions', authorize('roles:read'), controller.getAllPermissions);
+router.get('/',  authorize('roles:read'), controller.getAll);
+router.post('/', authorize('roles:manage'), createRoleRules, validate, controller.create);
 
-router.get('/:roleId',    controller.getOne);
-router.patch('/:roleId',  updateRoleRules,    validate, controller.update);
-router.delete('/:roleId', controller.remove);
+router.get('/:roleId',    authorize('roles:read'), controller.getOne);
+router.patch('/:roleId',  authorize('roles:manage'), updateRoleRules, validate, controller.update);
+router.delete('/:roleId', authorize('roles:manage'), controller.remove);
 
-router.get('/:roleId/permissions',   controller.getPermissions);
-router.patch('/:roleId/permissions', setPermissionsRules, validate, controller.setPermissions);
+router.get('/:roleId/permissions',   authorize('roles:read'), controller.getPermissions);
+router.patch('/:roleId/permissions', authorize('roles:manage'), setPermissionsRules, validate, controller.setPermissions);
 
 module.exports = router;

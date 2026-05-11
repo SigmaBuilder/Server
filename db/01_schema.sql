@@ -1,9 +1,9 @@
 -- =============================================================================
--- SigmaBuilder — init.sql
+-- SigmaBuilder — 01_schema.sql
 -- PostgreSQL 17
 --
--- Este script se ejecuta automáticamente al inicializar el contenedor Docker.
--- Orden: extensiones → tipos → tablas → funciones → índices → seeds
+-- Este script se ejecuta automáticamente para crear o actualizar el esquema de la base de datos.
+-- Orden: extensiones → tipos → tablas → funciones → índices.
 -- =============================================================================
 
 -- ─── Extensiones ─────────────────────────────────────────────────────────────
@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- projects
 CREATE TABLE IF NOT EXISTS projects (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_by  UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name        VARCHAR(255) NOT NULL,
   api_key     UUID         NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   description TEXT,
@@ -84,6 +85,7 @@ CREATE TABLE IF NOT EXISTS roles (
   project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name        VARCHAR(100) NOT NULL,
   description TEXT,
+  super       BOOLEAN      NOT NULL DEFAULT false,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
   UNIQUE (project_id, name)
 );
@@ -248,8 +250,67 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers para actualizar updated_at automáticamente
+-- Crea los roles por defecto cuando se crea un proyecto
+CREATE OR REPLACE FUNCTION create_default_project_roles()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_owner_role_id UUID;
+  v_admin_role_id UUID;
+  v_member_role_id UUID;
+BEGIN
+  -- Rol de Owner
+  INSERT INTO roles (project_id, name, description, super)
+  VALUES (NEW.id, 'Owner', 'Full control over the project, including deletion and role management', true)
+  RETURNING id INTO v_owner_role_id;
+  
+  -- Rol de Admin
+  INSERT INTO roles (project_id, name, description, super)
+  VALUES (NEW.id, 'Admin', 'Can manage members and project settings, but cannot delete the project', true)
+  RETURNING id INTO v_admin_role_id;
 
+  -- Rol de Member
+  INSERT INTO roles (project_id, name, description)
+  VALUES (NEW.id, 'Member', 'Read-only access to project resources')
+  RETURNING id INTO v_member_role_id;
+
+  -- Permisos del Owner
+  INSERT INTO role_permissions (role_id, permission_id)
+  SELECT v_owner_role_id, id
+  FROM permissions;
+
+  -- Permisos del Admin
+  INSERT INTO role_permissions (role_id, permission_id)
+  SELECT v_admin_role_id, id
+  FROM permissions
+  WHERE action IN (
+    'project:read',
+    'project:update',
+    'members:read',
+    'members:invite',
+    'members:update',
+    'members:remove',
+    'roles:read'
+  );
+
+  -- Permisos del Member
+  INSERT INTO role_permissions (role_id, permission_id)
+  SELECT v_member_role_id, id
+  FROM permissions
+  WHERE action IN (
+    'project:read',
+    'members:read',
+    'roles:read'
+  );
+
+  -- Agregar al creador como Owner
+  INSERT INTO project_members (project_id, user_id, role_id)
+  VALUES (NEW.id, NEW.created_by, v_owner_role_id);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers para actualizar updated_at automáticamente
 -- users
 CREATE OR REPLACE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON users
@@ -281,59 +342,7 @@ CREATE OR REPLACE TRIGGER trg_project_invitations_updated_at
   BEFORE UPDATE ON project_invitations
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- ─── Seeds ──────────────────────────────────────────────────────────────────
--- permissions 
-INSERT INTO permissions (action) VALUES
-  ('project:read'),
-  ('project:update'),
-  ('project:delete'),
-  ('members:read'),
-  ('members:invite'),
-  ('members:update'),
-  ('members:remove'),
-  ('roles:read'),
-  ('roles:manage')
-ON CONFLICT (action) DO NOTHING;
-
--- roles
-INSERT INTO roles (name, description) VALUES
-  ('owner',  'Full control over the project, including deletion and role management'),
-  ('admin',  'Can manage members and project settings, but cannot delete the project'),
-  ('member', 'Read-only access to project resources')
-ON CONFLICT (name) DO NOTHING;
-
--- roles_permissions 
--- owner
-INSERT INTO role_permissions (role_id, permission_id)
-SELECT role.id, perm.id
-FROM   roles role, permissions perm
-WHERE  role.name = 'owner'
-ON CONFLICT DO NOTHING;
-
--- admin
-INSERT INTO role_permissions (role_id, permission_id)
-SELECT role.id, perm.id
-FROM   roles role
-JOIN   permissions perm ON perm.action IN (
-  'project:read',
-  'project:update',
-  'members:read',
-  'members:invite',
-  'members:update',
-  'members:remove',
-  'roles:read'
-)
-WHERE  role.name = 'admin'
-ON CONFLICT DO NOTHING;
-
--- member
-INSERT INTO role_permissions (role_id, permission_id)
-SELECT role.id, perm.id
-FROM   roles role
-JOIN   permissions perm ON perm.action IN (
-  'project:read',
-  'members:read',
-  'roles:read'
-)
-WHERE  role.name = 'member'
-ON CONFLICT DO NOTHING;
+-- Crear roles por defecto cuando se crea un proyecto
+CREATE TRIGGER trg_create_default_roles
+  AFTER INSERT ON projects
+  FOR EACH ROW EXECUTE FUNCTION create_default_project_roles();
