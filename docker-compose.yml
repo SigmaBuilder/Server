@@ -11,6 +11,7 @@ services:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - ./db/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./db/02_seeds.sql:/docker-entrypoint-initdb.d/02_seeds.sql
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sigma} -d ${DB_NAME:-sigmabuilder}"]
