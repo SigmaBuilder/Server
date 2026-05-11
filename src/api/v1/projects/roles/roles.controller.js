@@ -15,7 +15,7 @@ const HTTP_STATUS = require('../../../../constants/httpStatus');
  */
 const getAll = async (req, res, next) => {
   try {
-    const roles = await rolesService.getAllRoles();
+    const roles = await rolesService.getAllRoles(req.params.projectId);
     sendSuccess(res, { roles });
   } catch (err) { next(err); }
 };
@@ -41,7 +41,8 @@ const getOne = async (req, res, next) => {
  */
 const create = async (req, res, next) => {
   try {
-    const role = await rolesService.createRole(req.body);
+    const userRole = await permissionsService.getUserRole(req.user.id, req.params.projectId);
+    const role = await rolesService.createRole(req.params.projectId, req.body, userRole);
     sendSuccess(res, { role }, HTTP_STATUS.CREATED);
   } catch (err) { next(err); }
 };
@@ -54,8 +55,8 @@ const create = async (req, res, next) => {
  */
 const update = async (req, res, next) => {
   try {
-    const userPermissions = await permissionsService.getUserPermissions(req.user.id, req.params.projectId);
-    const role = await rolesService.updateRole(req.params.roleId, req.body, userPermissions);
+    const userRole = await permissionsService.getUserRole(req.user.id, req.params.projectId);
+    const role = await rolesService.updateRole(req.params.roleId, req.body, userRole);
     sendSuccess(res, { role });
   } catch (err) { next(err); }
 };
@@ -68,8 +69,8 @@ const update = async (req, res, next) => {
  */
 const remove = async (req, res, next) => {
   try {
-    const userPermissions = await permissionsService.getUserPermissions(req.user.id, req.params.projectId);
-    await rolesService.deleteRole(req.params.roleId, userPermissions);
+    const userRole = await permissionsService.getUserRole(req.user.id, req.params.projectId);
+    await rolesService.deleteRole(req.params.roleId, userRole);
     sendSuccess(res, null, HTTP_STATUS.NO_CONTENT);
   } catch (err) { next(err); }
 };
@@ -95,8 +96,8 @@ const getPermissions = async (req, res, next) => {
  */
 const setPermissions = async (req, res, next) => {
   try {
-    const userPermissions = await permissionsService.getUserPermissions(req.user.id, req.params.projectId);
-    await rolesService.setRolePermissions(req.params.roleId, req.body.permissionIds, userPermissions);
+    const userRole = await permissionsService.getUserRole(req.user.id, req.params.projectId);
+    await rolesService.setRolePermissions(req.params.roleId, req.body.permissionIds, userRole);
     const role = await rolesService.getRoleById(req.params.roleId);
     sendSuccess(res, { role });
   } catch (err) { next(err); }
