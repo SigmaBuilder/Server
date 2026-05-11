@@ -1,10 +1,10 @@
 /* Controladores de rutas de sites. */
 
-'use strict';
+"use strict";
 
-const sitesService = require('./sites.service');
-const { sendSuccess } = require('../../../../utils/response');
-const HTTP_STATUS = require('../../../../constants/httpStatus');
+const sitesService = require("./sites.service");
+const { sendSuccess } = require("../../../../utils/response");
+const HTTP_STATUS = require("../../../../constants/httpStatus");
 
 /**
  * Obtiene todos los sites de un proyecto.
@@ -14,9 +14,13 @@ const HTTP_STATUS = require('../../../../constants/httpStatus');
  */
 const getAllSitesByProject = async (req, res, next) => {
   try {
-    const sites = await sitesService.getAllSitesByProjectId(req.params.projectId);
+    const sites = await sitesService.getAllSitesByProjectId(
+      req.params.projectId,
+    );
     sendSuccess(res, { sites });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -27,9 +31,32 @@ const getAllSitesByProject = async (req, res, next) => {
  */
 const getSiteById = async (req, res, next) => {
   try {
-    const site = await sitesService.getSiteById(req.params.projectId, req.params.siteId);
+    const site = await sitesService.getSiteById(
+      req.params.projectId,
+      req.params.siteId,
+    );
     sendSuccess(res, { site });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Obtiene un site por su slug.
+ * @param {Object} req - Objeto de petición.
+ * @param {Object} res - Objeto de respuesta.
+ * @param {Function} next - Función para pasar al siguiente middleware.
+ */
+const getSiteBySlug = async (req, res, next) => {
+  try {
+    const site = await sitesService.getSiteBySlug(
+      req.params.projectId,
+      req.params.slug,
+    );
+    sendSuccess(res, { site });
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -42,7 +69,9 @@ const createSite = async (req, res, next) => {
   try {
     const site = await sitesService.createSite(req.params.projectId, req.body);
     sendSuccess(res, { site }, HTTP_STATUS.CREATED);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -53,9 +82,15 @@ const createSite = async (req, res, next) => {
  */
 const updateSite = async (req, res, next) => {
   try {
-    const site = await sitesService.updateSite(req.params.projectId, req.params.siteId, req.body);
+    const site = await sitesService.updateSite(
+      req.params.projectId,
+      req.params.siteId,
+      req.body,
+    );
     sendSuccess(res, { site });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -68,7 +103,9 @@ const deleteSite = async (req, res, next) => {
   try {
     await sitesService.deleteSite(req.params.projectId, req.params.siteId);
     sendSuccess(res, null, HTTP_STATUS.NO_CONTENT);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 module.exports = {
@@ -77,4 +114,5 @@ module.exports = {
   createSite,
   updateSite,
   deleteSite,
+  getSiteBySlug,
 };
