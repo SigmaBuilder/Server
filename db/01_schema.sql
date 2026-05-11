@@ -1,9 +1,9 @@
 -- =============================================================================
--- SigmaBuilder — init.sql
+-- SigmaBuilder — 01_schema.sql
 -- PostgreSQL 17
 --
--- Este script se ejecuta automáticamente al inicializar el contenedor Docker.
--- Orden: extensiones → tipos → tablas → funciones → índices → seeds
+-- Este script se ejecuta automáticamente para crear o actualizar el esquema de la base de datos.
+-- Orden: extensiones → tipos → tablas → funciones → índices.
 -- =============================================================================
 
 -- ─── Extensiones ─────────────────────────────────────────────────────────────
