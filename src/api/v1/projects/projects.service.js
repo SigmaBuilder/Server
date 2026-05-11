@@ -60,22 +60,10 @@ const getProjectById = async (projectId) => {
  * @param {string} creatorUserId - ID del usuario creador.
  */
 const createProject = async ({ name, description }, creatorUserId) => {
-  const ownerRole = await db('roles').where({ name: 'owner' }).select('id').first();
-
-  if (!ownerRole) {
-    throw new AppError('Owner role not seeded. Please run database init.sql.', HTTP_STATUS.INTERNAL_SERVER_ERROR);
-  }
-
   const project = await db.transaction(async (trx) => {
     const [newProject] = await trx('projects')
-      .insert({ name, description: description ?? null })
+      .insert({ name, description: description ?? null, created_by: creatorUserId })
       .returning(['id', 'name', 'description', 'api_key', 'created_at']);
-
-    await trx('project_members').insert({
-      project_id: newProject.id,
-      user_id:    creatorUserId,
-      role_id:    ownerRole.id,
-    });
 
     return newProject;
   });
