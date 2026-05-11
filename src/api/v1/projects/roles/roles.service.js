@@ -13,7 +13,7 @@ const getAllRoles = async () => {
   const roles = await db('roles as r')
     .leftJoin('role_permissions as rp', 'rp.role_id', 'r.id')
     .leftJoin('permissions as p', 'p.id', 'rp.permission_id')
-    .select('r.id', 'r.name', 'r.description', 'p.id as perm_id', 'p.action as perm_action')
+    .select('r.id', 'r.name', 'r.description', 'r.super', 'p.id as perm_id', 'p.action as perm_action')
     .orderBy('r.name');
 
   if (!roles) throw new AppError('Could not fetch roles', HTTP_STATUS.INTERNAL_SERVER_ERROR);
@@ -31,7 +31,7 @@ const getRoleById = async (roleId) => {
     .leftJoin('role_permissions as rp', 'rp.role_id', 'r.id')
     .leftJoin('permissions as p', 'p.id', 'rp.permission_id')
     .where('r.id', roleId)
-    .select('r.id', 'r.name', 'r.description', 'p.id as perm_id', 'p.action as perm_action');
+    .select('r.id', 'r.name', 'r.description', 'r.super', 'p.id as perm_id', 'p.action as perm_action');
 
   if (!rows || rows.length === 0) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
 
@@ -46,7 +46,7 @@ const createRole = async ({ name, description, permissionIds = [] }) => {
   try {
     const [role] = await db('roles')
       .insert({ name, description: description ?? null })
-      .returning(['id', 'name', 'description']);
+      .returning(['id', 'name', 'description', 'super']);
 
     if (permissionIds.length > 0) {
       await setRolePermissions(role.id, permissionIds);
@@ -67,10 +67,14 @@ const createRole = async ({ name, description, permissionIds = [] }) => {
  * @param {{ name?: string, description?: string }} dto - Datos del rol.
  */
 const updateRole = async (roleId, dto) => {
+  const role = await db('roles').where({ id: roleId }).first();
+  if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
+  if (role.super) throw new AppError('Cannot update a super role', HTTP_STATUS.FORBIDDEN);
+
   const [updated] = await db('roles')
     .where({ id: roleId })
     .update(dto)
-    .returning(['id', 'name', 'description']);
+    .returning(['id', 'name', 'description', 'super']);
 
   if (!updated) throw new AppError('Could not update role', HTTP_STATUS.INTERNAL_SERVER_ERROR);
   return updated;
@@ -81,6 +85,10 @@ const updateRole = async (roleId, dto) => {
  * @param {string} roleId - ID del rol.
  */
 const deleteRole = async (roleId) => {
+  const role = await db('roles').where({ id: roleId }).first();
+  if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
+  if (role.super) throw new AppError('Cannot delete a super role', HTTP_STATUS.FORBIDDEN);
+
   const result = await db('project_members').where({ role_id: roleId }).count('* as count').first();
   const count  = parseInt(result?.count ?? '0', 10);
 
@@ -100,6 +108,10 @@ const deleteRole = async (roleId) => {
  * @param {string[]} permissionIds - IDs de los permisos.
  */
 const setRolePermissions = async (roleId, permissionIds) => {
+  const role = await db('roles').where({ id: roleId }).first();
+  if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
+  if (role.super) throw new AppError('Cannot modify permissions of a super role', HTTP_STATUS.FORBIDDEN);
+
   await db('role_permissions').where({ role_id: roleId }).delete();
 
   if (permissionIds.length === 0) return;
@@ -127,7 +139,7 @@ const groupRolesWithPermissions = (rows) => {
 
   for (const row of rows) {
     if (!map.has(row.id)) {
-      map.set(row.id, { id: row.id, name: row.name, description: row.description, permissions: [] });
+      map.set(row.id, { id: row.id, name: row.name, description: row.description, super: row.super, permissions: [] });
     }
     if (row.perm_id) {
       map.get(row.id).permissions.push({ id: row.perm_id, action: row.perm_action });
