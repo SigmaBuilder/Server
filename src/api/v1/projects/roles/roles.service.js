@@ -66,10 +66,12 @@ const createRole = async ({ name, description, permissionIds = [] }) => {
  * @param {string} roleId - ID del rol.
  * @param {{ name?: string, description?: string }} dto - Datos del rol.
  */
-const updateRole = async (roleId, dto) => {
+const updateRole = async (roleId, dto, userPermissions = []) => {
   const role = await db('roles').where({ id: roleId }).first();
   if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
-  if (role.super) throw new AppError('Cannot update a super role', HTTP_STATUS.FORBIDDEN);
+  if (role.super && !userPermissions.includes('project:delete')) {
+    throw new AppError('Requires additional permission (project:delete) to update a super role', HTTP_STATUS.FORBIDDEN);
+  }
 
   const [updated] = await db('roles')
     .where({ id: roleId })
@@ -84,10 +86,12 @@ const updateRole = async (roleId, dto) => {
  * Elimina un rol. Falla si algún miembro del proyecto lo está usando.
  * @param {string} roleId - ID del rol.
  */
-const deleteRole = async (roleId) => {
+const deleteRole = async (roleId, userPermissions = []) => {
   const role = await db('roles').where({ id: roleId }).first();
   if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
-  if (role.super) throw new AppError('Cannot delete a super role', HTTP_STATUS.FORBIDDEN);
+  if (role.super && !userPermissions.includes('project:delete')) {
+    throw new AppError('Requires additional permission (project:delete) to delete a super role', HTTP_STATUS.FORBIDDEN);
+  }
 
   const result = await db('project_members').where({ role_id: roleId }).count('* as count').first();
   const count  = parseInt(result?.count ?? '0', 10);
@@ -107,10 +111,12 @@ const deleteRole = async (roleId) => {
  * @param {string} roleId - ID del rol.
  * @param {string[]} permissionIds - IDs de los permisos.
  */
-const setRolePermissions = async (roleId, permissionIds) => {
+const setRolePermissions = async (roleId, permissionIds, userPermissions = []) => {
   const role = await db('roles').where({ id: roleId }).first();
   if (!role) throw new AppError('Role not found', HTTP_STATUS.NOT_FOUND);
-  if (role.super) throw new AppError('Cannot modify permissions of a super role', HTTP_STATUS.FORBIDDEN);
+  if (role.super && !userPermissions.includes('project:delete')) {
+    throw new AppError('Requires additional permission (project:delete) to modify permissions of a super role', HTTP_STATUS.FORBIDDEN);
+  }
 
   await db('role_permissions').where({ role_id: roleId }).delete();
 

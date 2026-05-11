@@ -3,6 +3,7 @@
 'use strict';
 
 const rolesService = require('./roles.service');
+const permissionsService = require('../../../../services/permissions.service');
 const { sendSuccess } = require('../../../../utils/response');
 const HTTP_STATUS = require('../../../../constants/httpStatus');
 
@@ -53,7 +54,8 @@ const create = async (req, res, next) => {
  */
 const update = async (req, res, next) => {
   try {
-    const role = await rolesService.updateRole(req.params.roleId, req.body);
+    const userPermissions = await permissionsService.getUserPermissions(req.user.id, req.params.projectId);
+    const role = await rolesService.updateRole(req.params.roleId, req.body, userPermissions);
     sendSuccess(res, { role });
   } catch (err) { next(err); }
 };
@@ -66,7 +68,8 @@ const update = async (req, res, next) => {
  */
 const remove = async (req, res, next) => {
   try {
-    await rolesService.deleteRole(req.params.roleId);
+    const userPermissions = await permissionsService.getUserPermissions(req.user.id, req.params.projectId);
+    await rolesService.deleteRole(req.params.roleId, userPermissions);
     sendSuccess(res, null, HTTP_STATUS.NO_CONTENT);
   } catch (err) { next(err); }
 };
@@ -92,7 +95,8 @@ const getPermissions = async (req, res, next) => {
  */
 const setPermissions = async (req, res, next) => {
   try {
-    await rolesService.setRolePermissions(req.params.roleId, req.body.permissionIds);
+    const userPermissions = await permissionsService.getUserPermissions(req.user.id, req.params.projectId);
+    await rolesService.setRolePermissions(req.params.roleId, req.body.permissionIds, userPermissions);
     const role = await rolesService.getRoleById(req.params.roleId);
     sendSuccess(res, { role });
   } catch (err) { next(err); }
