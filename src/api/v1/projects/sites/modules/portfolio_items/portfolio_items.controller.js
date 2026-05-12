@@ -3,8 +3,8 @@
 'use strict';
 
 const service = require('./portfolio_items.service');
-const { sendSuccess } = require('../../../../../utils/response');
-const HTTP_STATUS = require('../../../../../constants/httpStatus');
+const { sendSuccess } = require('../../../../../../utils/response');
+const HTTP_STATUS = require('../../../../../../constants/httpStatus');
 
 /**
  * Obtiene todos los elementos del portfolio ordenados por 'sort_order'
@@ -29,7 +29,7 @@ const getAll = async (req, res, next) => {
  */
 const getById = async (req, res, next) => {
   try {
-    const data = await service.getById(req.params.siteId, req.params.id);
+    const data = await service.getById(req.params.siteId, req.params.portfolioItemId);
     sendSuccess(res, { portfolioItem: data });
   } catch (err) {
     next(err);
@@ -59,7 +59,7 @@ const create = async (req, res, next) => {
  */
 const update = async (req, res, next) => {
   try {
-    const data = await service.update(req.params.siteId, req.params.id, req.body);
+    const data = await service.update(req.params.siteId, req.params.portfolioItemId, req.body);
     sendSuccess(res, { portfolioItem: data });
   } catch (err) {
     next(err);
@@ -74,7 +74,7 @@ const update = async (req, res, next) => {
  */
 const remove = async (req, res, next) => {
   try {
-    await service.remove(req.params.siteId, req.params.id);
+    await service.remove(req.params.siteId, req.params.portfolioItemId);
     sendSuccess(res, null, HTTP_STATUS.NO_CONTENT);
   } catch (err) {
     next(err);
