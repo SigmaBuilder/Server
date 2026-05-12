@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS sites (
   slug          VARCHAR(255) UNIQUE,
   name          VARCHAR(255) NOT NULL,
   template_type VARCHAR(50)  NOT NULL,  
+  status        VARCHAR(50)  NOT NULL DEFAULT 'draft',
   features      JSONB        NOT NULL DEFAULT '{}'::jsonb,
   content       JSONB        NOT NULL DEFAULT '{}'::jsonb,
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
