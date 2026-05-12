@@ -15,6 +15,9 @@ const updateSiteRules = [
     .optional()
     .isString().withMessage('Site name must be a string')
     .trim(),
+  body('status')
+    .optional()
+    .isIn(['draft', 'public']).withMessage('Status must be draft or public'),
   body('features')
     .optional()
     .isObject().withMessage('Features must be a JSON object'),
