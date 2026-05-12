@@ -76,9 +76,47 @@ const deleteSite = async (req, res, next) => {
   }
 };
 
+/**
+ * Publica un site (status = 'public').
+ * @param {Object} req - Objeto de petición.
+ * @param {Object} res - Objeto de respuesta.
+ * @param {Function} next - Función para pasar al siguiente middleware.
+ */
+const publishSite = async (req, res, next) => {
+  try {
+    const site = await sitesService.publishSite(
+      req.params.projectId,
+      req.params.siteId,
+    );
+    sendSuccess(res, { site });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Pone un site en borrador (status = 'draft').
+ * @param {Object} req - Objeto de petición.
+ * @param {Object} res - Objeto de respuesta.
+ * @param {Function} next - Función para pasar al siguiente middleware.
+ */
+const unpublishSite = async (req, res, next) => {
+  try {
+    const site = await sitesService.unpublishSite(
+      req.params.projectId,
+      req.params.siteId,
+    );
+    sendSuccess(res, { site });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getSiteById,
   getSiteBySlug,
   updateSite,
+  publishSite,
+  unpublishSite,
   deleteSite,
 };

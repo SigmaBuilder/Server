@@ -13,7 +13,7 @@ const HTTP_STATUS = require('../../../../constants/httpStatus');
 const getAllSitesByProjectId = async (projectId) => {
   const sites = await db('sites')
     .where({ project_id: projectId })
-    .select('id', 'slug', 'name', 'template_type', 'created_at', 'updated_at')
+    .select('id', 'slug', 'name', 'template_type', 'status', 'created_at', 'updated_at')
     .orderBy('created_at', 'desc');
 
   if (!sites) throw new AppError('Could not fetch sites', HTTP_STATUS.INTERNAL_SERVER_ERROR);
@@ -35,8 +35,9 @@ const createSite = async (projectId, siteData) => {
         slug: siteData.slug,
         name: siteData.name,
         template_type: siteData.templateType,
+        status: 'draft',
       })
-      .returning(['id', 'slug', 'name', 'template_type', 'created_at']);
+      .returning(['id', 'slug', 'name', 'template_type', 'status', 'created_at']);
     
     return newSite;
 
