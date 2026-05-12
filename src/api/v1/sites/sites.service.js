@@ -91,7 +91,7 @@ const updateSite = async (projectId, siteId, updateData) => {
         ...updateData,
         updated_at: new Date(),
       })
-      .returning(['id', 'slug', 'name', 'template_type', 'features', 'content', 'created_at', 'updated_at']);
+      .returning(['id', 'slug', 'name', 'template_type', 'status', 'features', 'content', 'created_at', 'updated_at']);
     
     if (!updatedSite) throw new AppError('Could not update site', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     
@@ -118,10 +118,52 @@ const deleteSite = async (projectId, siteId) => {
   if (deletedCount === 0) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
 };
 
+/**
+ * Cambia el estado de un site a public.
+ * @param {string} projectId - ID del proyecto.
+ * @param {string} siteId - ID del site.
+ * @returns {Promise<object>} - Site actualizado.
+ */
+const publishSite = async (projectId, siteId) => {
+  const [updatedSite] = await db('sites')
+    .where({ id: siteId, project_id: projectId })
+    .update({
+      status: 'public',
+      updated_at: new Date(),
+    })
+    .returning(['id', 'slug', 'name', 'template_type', 'status', 'created_at', 'updated_at']);
+
+  if (!updatedSite) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
+
+  return updatedSite;
+};
+
+/**
+ * Cambia el estado de un site a draft.
+ * @param {string} projectId - ID del proyecto.
+ * @param {string} siteId - ID del site.
+ * @returns {Promise<object>} - Site actualizado.
+ */
+const unpublishSite = async (projectId, siteId) => {
+  const [updatedSite] = await db('sites')
+    .where({ id: siteId, project_id: projectId })
+    .update({
+      status: 'draft',
+      updated_at: new Date(),
+    })
+    .returning(['id', 'slug', 'name', 'template_type', 'status', 'created_at', 'updated_at']);
+
+  if (!updatedSite) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
+
+  return updatedSite;
+};
+
 module.exports = {
   getSiteBySlugGlobal,
   getSiteById,
   getSiteBySlug,
   updateSite,
+  publishSite,
+  unpublishSite,
   deleteSite,
 };
