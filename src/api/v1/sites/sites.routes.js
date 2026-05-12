@@ -35,6 +35,9 @@ router.patch(
   controller.updateSite
 );
 
+router.post('/:siteId/publish', resolveSiteContext, authorize("project:update"), controller.publishSite);
+router.post('/:siteId/draft', resolveSiteContext, authorize("project:update"), controller.unpublishSite);
+
 router.delete('/:siteId', resolveSiteContext, authorize("project:update"), controller.deleteSite);
 
 
