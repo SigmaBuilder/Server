@@ -48,32 +48,50 @@ const getSiteBySlugGlobal = async (slug, userId, includeProject = false) => {
  * Obtiene un site específico por su ID y el ID del proyecto al que pertenece.
  * @param {string} projectId - ID del proyecto.
  * @param {string} siteId - ID del site.
- * @returns {Promise<object>} - Site.
+ * @param {boolean} includeProject - Si es true, incluye la información del proyecto.
+ * @returns {Promise<object>} - Objeto con el site y opcionalmente el project.
  */
-const getSiteById = async (projectId, siteId) => {
+const getSiteById = async (projectId, siteId, includeProject = false) => {
   const site = await db('sites')
     .where({ id: siteId, project_id: projectId})
     .first();
   
   if (!site) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
   
-  return site;
+  let project = undefined;
+  if (includeProject) {
+    project = await db('projects').where({ id: projectId }).first();
+    if (project) {
+      delete project.api_key;
+    }
+  }
+
+  return { site, project };
 };
 
 /**
  * Obtiene un site específico por su slug y el ID del proyecto al que pertenece.
  * @param {string} projectId - ID del proyecto.
  * @param {string} slug - Slug del site.
- * @returns {Promise<object>} - Site.
+ * @param {boolean} includeProject - Si es true, incluye la información del proyecto.
+ * @returns {Promise<object>} - Objeto con el site y opcionalmente el project.
  */
-const getSiteBySlug = async (projectId, slug) => {
+const getSiteBySlug = async (projectId, slug, includeProject = false) => {
   const site = await db('sites')
     .where({ slug, project_id: projectId})
     .first();
   
   if (!site) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
   
-  return site;
+  let project = undefined;
+  if (includeProject) {
+    project = await db('projects').where({ id: projectId }).first();
+    if (project) {
+      delete project.api_key;
+    }
+  }
+
+  return { site, project };
 };
 
 /**
