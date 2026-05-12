@@ -6,6 +6,10 @@ const db = require('../../../../../config/db');
 const AppError = require('../../../../../utils/AppError');
 const HTTP_STATUS = require('../../../../../constants/httpStatus');
 
+/**
+ * Retorna todos los elementos del portfolio ordenados por 'sort_order'
+ * @param {string} siteId - ID del sitio.
+ */
 const getAll = async (siteId) => {
   const data = await db('portfolio_items')
     .where({ site_id: siteId })
@@ -13,6 +17,11 @@ const getAll = async (siteId) => {
   return data;
 };
 
+/**
+ * Retorna un elemento del portfolio por ID.
+ * @param {string} siteId - ID del sitio.
+ * @param {string} id - ID del elemento del portfolio.
+ */
 const getById = async (siteId, id) => {
   const data = await db('portfolio_items')
     .where({ site_id: siteId, id })
@@ -21,6 +30,11 @@ const getById = async (siteId, id) => {
   return data;
 };
 
+/**
+ * Crea un nuevo elemento del portfolio.
+ * @param {string} siteId - ID del sitio.
+ * @param {Object} data - Datos del elemento del portfolio.
+ */
 const create = async (siteId, data) => {
   try {
     const [newItem] = await db('portfolio_items')
@@ -35,6 +49,12 @@ const create = async (siteId, data) => {
   }
 };
 
+/**
+ * Actualiza un elemento del portfolio.
+ * @param {string} siteId - ID del sitio.
+ * @param {string} id - ID del elemento del portfolio.
+ * @param {Object} updateData - Datos a actualizar.
+ */
 const update = async (siteId, id, updateData) => {
   try {
     const [updatedItem] = await db('portfolio_items')
@@ -52,6 +72,11 @@ const update = async (siteId, id, updateData) => {
   }
 };
 
+/**
+ * Elimina un elemento del portfolio.
+ * @param {string} siteId - ID del sitio.
+ * @param {string} id - ID del elemento del portfolio.
+ */
 const remove = async (siteId, id) => {
   const deletedCount = await db('portfolio_items')
     .where({ site_id: siteId, id })
