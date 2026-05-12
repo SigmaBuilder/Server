@@ -39,7 +39,7 @@ const update = async (siteId, id, updateData) => {
   try {
     const [updatedItem] = await db('portfolio_items')
       .where({ site_id: siteId, id })
-      .update({ ...updateData, updated_at: new Date() })
+      .update({ ...updateData })
       .returning('*');
     
     if (!updatedItem) throw new AppError('PortfolioItem not found', HTTP_STATUS.NOT_FOUND);
