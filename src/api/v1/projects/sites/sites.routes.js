@@ -27,6 +27,6 @@ router.patch("/:siteId", authorize("project:update"), updateSiteRules, validate,
 router.delete("/:siteId", authorize("project:update"), controller.deleteSite);
 
 // Delegar sub-rutas de portfolio_items
-router.use('/:siteId/portfolio_items', portfolioItemsRouter);
+router.use('/:siteId/portfolio-items', portfolioItemsRouter);
 
 module.exports = router;
