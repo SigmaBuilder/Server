@@ -9,7 +9,7 @@ const HTTP_STATUS = require('../../../../../constants/httpStatus');
 const getAll = async (siteId) => {
   const data = await db('portfolio_items')
     .where({ site_id: siteId })
-    .orderBy('created_at', 'desc');
+    .orderBy('sort_order', 'asc');
   return data;
 };
 
