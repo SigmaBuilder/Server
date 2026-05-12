@@ -14,11 +14,14 @@ const HTTP_STATUS = require('../../../constants/httpStatus');
  */
 const getSiteById = async (req, res, next) => {
   try {
-    const site = await sitesService.getSiteById(
+    const includeProject = req.query.includeProject === 'true';
+    const result = await sitesService.getSiteById(
       req.params.projectId,
       req.params.siteId,
+      includeProject
     );
-    sendSuccess(res, { site });
+    // result contiene { site, project } (project será undefined si includeProject es false)
+    sendSuccess(res, result);
   } catch (err) {
     next(err);
   }
@@ -32,11 +35,14 @@ const getSiteById = async (req, res, next) => {
  */
 const getSiteBySlug = async (req, res, next) => {
   try {
-    const site = await sitesService.getSiteBySlug(
+    const includeProject = req.query.includeProject === 'true';
+    const result = await sitesService.getSiteBySlug(
       req.params.projectId,
       req.params.slug,
+      includeProject
     );
-    sendSuccess(res, { site });
+    // result contiene { site, project }
+    sendSuccess(res, result);
   } catch (err) {
     next(err);
   }

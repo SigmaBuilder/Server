@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS sites (
   project_id    UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   slug          VARCHAR(255) UNIQUE,
   name          VARCHAR(255) NOT NULL,
-  template_type VARCHAR(50)  NOT NULL,  
+  template_type VARCHAR(50)  NOT NULL DEFAULT 'standard',  
   status        VARCHAR(50)  NOT NULL DEFAULT 'draft',
   features      JSONB        NOT NULL DEFAULT '{}'::jsonb,
   content       JSONB        NOT NULL DEFAULT '{}'::jsonb,
