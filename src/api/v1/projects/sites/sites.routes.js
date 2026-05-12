@@ -12,8 +12,6 @@ const validate = require("../../../../middlewares/validate");
 const authorize = require("../../../../middlewares/authorize");
 
 // Sub-rutas
-const portfolioItemsRouter = require('./modules/portfolio/items/items.routes');
-
 const router = Router({ mergeParams: true });
 
 router.get("/", authorize("project:read"), controller.getAllSitesByProject);
@@ -25,8 +23,5 @@ router.post("/", authorize("project:update"), createSiteRules, validate, control
 router.patch("/:siteId", authorize("project:update"), updateSiteRules, validate, controller.updateSite);
 
 router.delete("/:siteId", authorize("project:update"), controller.deleteSite);
-
-// Delegar sub-rutas de portfolio_items
-router.use('/:siteId/portfolio-items', portfolioItemsRouter);
 
 module.exports = router;
