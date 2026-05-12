@@ -2,9 +2,9 @@
 
 'use strict';
 
-const service = require('./portfolio_items.service');
-const { sendSuccess } = require('../../../../../../utils/response');
-const HTTP_STATUS = require('../../../../../../constants/httpStatus');
+const service = require('./items.service');
+const { sendSuccess } = require('../../../../../../../utils/response');
+const HTTP_STATUS = require('../../../../../../../constants/httpStatus');
 
 /**
  * Obtiene todos los elementos del portfolio ordenados por 'sort_order'

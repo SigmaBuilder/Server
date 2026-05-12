@@ -2,9 +2,9 @@
 
 'use strict';
 
-const db = require('../../../../../../config/db');
-const AppError = require('../../../../../../utils/AppError');
-const HTTP_STATUS = require('../../../../../../constants/httpStatus');
+const db = require('../../../../../../../config/db');
+const AppError = require('../../../../../../../utils/AppError');
+const HTTP_STATUS = require('../../../../../../../constants/httpStatus');
 
 /**
  * Retorna todos los elementos del portfolio ordenados por 'sort_order'

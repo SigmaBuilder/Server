@@ -12,7 +12,7 @@ const validate = require("../../../../middlewares/validate");
 const authorize = require("../../../../middlewares/authorize");
 
 // Sub-rutas
-const portfolioItemsRouter = require('./modules/portfolio_items/portfolio_items.routes');
+const portfolioItemsRouter = require('./modules/portfolio/items/items.routes');
 
 const router = Router({ mergeParams: true });
 

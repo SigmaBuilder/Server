@@ -4,12 +4,12 @@
 
 const { Router } = require('express');
 
-const controller = require('./portfolio_items.controller');
+const controller = require('./items.controller');
 
-const { createRules, updateRules } = require('./portfolio_items.validator');
+const { createRules, updateRules } = require('./items.validator');
 
-const validate = require('../../../../../../middlewares/validate');
-const authorize = require('../../../../../../middlewares/authorize');
+const validate = require('../../../../../../../middlewares/validate');
+const authorize = require('../../../../../../../middlewares/authorize');
 
 const router = Router({ mergeParams: true });
 
