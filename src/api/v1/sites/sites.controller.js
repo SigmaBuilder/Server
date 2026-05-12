@@ -4,26 +4,81 @@
 
 const sitesService = require('./sites.service');
 const { sendSuccess } = require('../../../utils/response');
+const HTTP_STATUS = require('../../../constants/httpStatus');
 
 /**
- * Obtiene un site por su slug globalmente (verificando que el usuario tenga acceso a su proyecto).
+ * Obtiene un site por su ID.
  * @param {Object} req - Objeto de petición.
  * @param {Object} res - Objeto de respuesta.
  * @param {Function} next - Función para pasar al siguiente middleware.
  */
-const getSiteBySlugGlobal = async (req, res, next) => {
+const getSiteById = async (req, res, next) => {
   try {
-    const { slug } = req.params;
-    const includeProject = req.query.includeProject === 'true';
-    const userId = req.user.id;
+    const site = await sitesService.getSiteById(
+      req.params.projectId,
+      req.params.siteId,
+    );
+    sendSuccess(res, { site });
+  } catch (err) {
+    next(err);
+  }
+};
 
-    const result = await sitesService.getSiteBySlugGlobal(slug, userId, includeProject);
-    sendSuccess(res, result);
+/**
+ * Obtiene un site por su slug.
+ * @param {Object} req - Objeto de petición.
+ * @param {Object} res - Objeto de respuesta.
+ * @param {Function} next - Función para pasar al siguiente middleware.
+ */
+const getSiteBySlug = async (req, res, next) => {
+  try {
+    const site = await sitesService.getSiteBySlug(
+      req.params.projectId,
+      req.params.slug,
+    );
+    sendSuccess(res, { site });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Actualiza un site.
+ * @param {Object} req - Objeto de petición.
+ * @param {Object} res - Objeto de respuesta.
+ * @param {Function} next - Función para pasar al siguiente middleware.
+ */
+const updateSite = async (req, res, next) => {
+  try {
+    const site = await sitesService.updateSite(
+      req.params.projectId,
+      req.params.siteId,
+      req.body,
+    );
+    sendSuccess(res, { site });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Elimina un site.
+ * @param {Object} req - Objeto de petición.
+ * @param {Object} res - Objeto de respuesta.
+ * @param {Function} next - Función para pasar al siguiente middleware.
+ */
+const deleteSite = async (req, res, next) => {
+  try {
+    await sitesService.deleteSite(req.params.projectId, req.params.siteId);
+    sendSuccess(res, null, HTTP_STATUS.NO_CONTENT);
   } catch (err) {
     next(err);
   }
 };
 
 module.exports = {
-  getSiteBySlugGlobal,
+  getSiteById,
+  getSiteBySlug,
+  updateSite,
+  deleteSite,
 };

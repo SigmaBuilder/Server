@@ -8,6 +8,7 @@ const HTTP_STATUS = require('../../../constants/httpStatus');
 
 /**
  * Obtiene un site por su slug, validando que el usuario pertenezca al proyecto del site.
+ * @deprecated Use getSiteBySlug instead.
  * @param {string} slug - Slug del site.
  * @param {string} userId - ID del usuario.
  * @param {boolean} includeProject - Si es true, incluye la información del proyecto.
@@ -43,6 +44,84 @@ const getSiteBySlugGlobal = async (slug, userId, includeProject = false) => {
   return { site, project };
 };
 
+/**
+ * Obtiene un site específico por su ID y el ID del proyecto al que pertenece.
+ * @param {string} projectId - ID del proyecto.
+ * @param {string} siteId - ID del site.
+ * @returns {Promise<object>} - Site.
+ */
+const getSiteById = async (projectId, siteId) => {
+  const site = await db('sites')
+    .where({ id: siteId, project_id: projectId})
+    .first();
+  
+  if (!site) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
+  
+  return site;
+};
+
+/**
+ * Obtiene un site específico por su slug y el ID del proyecto al que pertenece.
+ * @param {string} projectId - ID del proyecto.
+ * @param {string} slug - Slug del site.
+ * @returns {Promise<object>} - Site.
+ */
+const getSiteBySlug = async (projectId, slug) => {
+  const site = await db('sites')
+    .where({ slug, project_id: projectId})
+    .first();
+  
+  if (!site) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
+  
+  return site;
+};
+
+/**
+ * Actualiza un site existente.
+ * @param {string} projectId - ID del proyecto.
+ * @param {string} siteId - ID del site.
+ * @param {object} updateData - Datos del site a actualizar.
+ * @returns {Promise<object>} - Site actualizado.
+ */
+const updateSite = async (projectId, siteId, updateData) => {
+  try {
+    const [updatedSite] = await db('sites')
+      .where({ id: siteId, project_id: projectId })
+      .update({
+        ...updateData,
+        updated_at: new Date(),
+      })
+      .returning(['id', 'slug', 'name', 'template_type', 'features', 'content', 'created_at', 'updated_at']);
+    
+    if (!updatedSite) throw new AppError('Could not update site', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    
+    return updatedSite;
+
+  } catch (err) {
+    if (err.code === '23505') {
+      throw new AppError(`Site with slug "${updateData.slug}" already exists`, HTTP_STATUS.CONFLICT);
+    }
+    throw err;
+  }
+};
+
+/**
+ * Elimina un site existente.
+ * @param {string} projectId - ID del proyecto.
+ * @param {string} siteId - ID del site.
+ */
+const deleteSite = async (projectId, siteId) => {
+  const deletedCount = await db('sites')
+    .where({ id: siteId, project_id: projectId })
+    .delete();
+
+  if (deletedCount === 0) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
+};
+
 module.exports = {
   getSiteBySlugGlobal,
+  getSiteById,
+  getSiteBySlug,
+  updateSite,
+  deleteSite,
 };
