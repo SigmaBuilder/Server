@@ -3,6 +3,7 @@
 'use strict';
 
 const authService   = require('./auth.service');
+const passwordResetService = require('./passwordReset.service');
 const { sendSuccess } = require('../../../utils/response');
 const HTTP_STATUS    = require('../../../constants/httpStatus');
 const env            = require('../../../config/env');
@@ -136,6 +137,34 @@ const getSessions = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+/**
+ * Solicita restablecimiento de contraseña.
+ * @param {object} req - Solicitud.
+ * @param {object} res - Respuesta.
+ * @param {function} next - Siguiente middleware.
+ */
+const forgotPassword = async (req, res, next) => {
+  try {
+    await passwordResetService.requestPasswordReset(req.body.email);
+    // Devolvemos success sin indicar si el correo existe o no por seguridad
+    sendSuccess(res, { message: 'If the email is registered, a reset link will be sent.' });
+  } catch (err) { next(err); }
+};
+
+/**
+ * Restablece la contraseña.
+ * @param {object} req - Solicitud.
+ * @param {object} res - Respuesta.
+ * @param {function} next - Siguiente middleware.
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, newPassword } = req.body;
+    await passwordResetService.resetPassword(token, newPassword);
+    sendSuccess(res, { message: 'Password has been reset successfully.' });
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   register,
   login,
@@ -143,5 +172,7 @@ module.exports = {
   logout,
   logoutAll,
   getMe,
-  getSessions
+  getSessions,
+  forgotPassword,
+  resetPassword
 };
