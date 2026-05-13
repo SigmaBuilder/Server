@@ -14,7 +14,7 @@ const HTTP_STATUS = require('../../../../../../constants/httpStatus');
 const getAll = async (siteId) => {
   const data = await db('portfolio_stack')
     .where({ site_id: siteId })
-    .orderBy('sort_order', 'asc');
+    .orderBy('created_at', 'asc');
   return data;
 };
 
