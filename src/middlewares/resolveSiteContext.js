@@ -6,7 +6,7 @@ const HTTP_STATUS = require('../constants/httpStatus');
 
 /**
  * Middleware que intercepta un :siteId de la URL, busca su project_id en la base de datos,
- * y lo inyecta en req.params.projectId para que los middlewares de autorización posteriores
+ * y lo inyecta en req.projectId para que los middlewares de autorización posteriores
  * puedan verificar los permisos correctamente.
  */
 const attachProjectFromSite = async (req, res, next) => {
