@@ -11,6 +11,9 @@ const {
   loginRules,
   forgotPasswordRules,
   resetPasswordRules,
+  updateProfileRules,
+  updateEmailRules,
+  updatePasswordRules
 } = require('./auth.validator');
 
 const validate = require('../../../middlewares/validate');
@@ -30,6 +33,9 @@ router.post('/reset-password', authRateLimiter, resetPasswordRules, validate, co
 router.post('/logout',     authenticate, controller.logout);
 router.post('/logout-all', authenticate, controller.logoutAll);
 router.get('/me',          authenticate, controller.getMe);
+router.patch('/me/profile',  authenticate, updateProfileRules, validate, controller.updateProfile);
+router.patch('/me/email',    authenticate, updateEmailRules, validate, controller.updateEmail);
+router.patch('/me/password', authenticate, updatePasswordRules, validate, controller.updatePassword);
 router.get('/sessions',    authenticate, controller.getSessions);
 
 module.exports = router;

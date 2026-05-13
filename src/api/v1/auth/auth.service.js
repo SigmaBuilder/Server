@@ -193,6 +193,67 @@ const getMe = async (userId) => {
  */
 const getSessions = async (userId) => refreshTokenService.getActiveSessions(userId);
 
+/**
+ * Actualiza el perfil del usuario autenticado (nombre, apellidos, avatar).
+ * @param {string} userId - ID del usuario.
+ * @param {object} data - Datos a actualizar.
+ */
+const updateProfile = async (userId, data) => {
+  const allowedUpdates = {};
+  if (data.first_name !== undefined) allowedUpdates.first_name = data.first_name;
+  if (data.last_name !== undefined) allowedUpdates.last_name = data.last_name;
+  if (data.avatar_url !== undefined) allowedUpdates.avatar_url = data.avatar_url;
+
+  if (Object.keys(allowedUpdates).length === 0) return null;
+
+  const [updatedUser] = await db('users')
+    .where({ id: userId })
+    .update(allowedUpdates)
+    .returning(['id', 'email', 'first_name', 'last_name', 'avatar_url', 'created_at']);
+
+  if (!updatedUser) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
+  return updatedUser;
+};
+
+/**
+ * Actualiza el correo electrónico del usuario.
+ * @param {string} userId - ID del usuario.
+ * @param {string} newEmail - Nuevo correo electrónico.
+ */
+const updateEmail = async (userId, newEmail) => {
+  const existing = await db('users').where({ email: newEmail }).whereNot({ id: userId }).first();
+  if (existing) {
+    throw new AppError('El email ya está en uso', HTTP_STATUS.CONFLICT);
+  }
+
+  const [updatedUser] = await db('users')
+    .where({ id: userId })
+    .update({ email: newEmail })
+    .returning(['id', 'email', 'first_name', 'last_name', 'avatar_url', 'created_at']);
+
+  if (!updatedUser) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
+  return updatedUser;
+};
+
+/**
+ * Actualiza la contraseña del usuario.
+ * @param {string} userId - ID del usuario.
+ * @param {string} currentPassword - Contraseña actual.
+ * @param {string} newPassword - Nueva contraseña.
+ */
+const updatePassword = async (userId, currentPassword, newPassword) => {
+  const user = await db('users').where({ id: userId }).select('password_hash').first();
+  if (!user) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
+
+  const valid = await bcrypt.compare(currentPassword, user.password_hash);
+  if (!valid) {
+    throw new AppError('La contraseña actual es incorrecta', HTTP_STATUS.UNAUTHORIZED);
+  }
+
+  const password_hash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+  await db('users').where({ id: userId }).update({ password_hash });
+};
+
 module.exports = {
   extractMeta, 
   register, 
@@ -201,5 +262,8 @@ module.exports = {
   logout, 
   logoutAll, 
   getMe, 
-  getSessions 
+  getSessions,
+  updateProfile,
+  updateEmail,
+  updatePassword
 };

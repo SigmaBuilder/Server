@@ -165,6 +165,46 @@ const resetPassword = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+/**
+ * Actualiza el perfil del usuario.
+ * @param {object} req - Solicitud.
+ * @param {object} res - Respuesta.
+ * @param {function} next - Siguiente middleware.
+ */
+const updateProfile = async (req, res, next) => {
+  try {
+    const user = await authService.updateProfile(req.user.id, req.body);
+    sendSuccess(res, { user });
+  } catch (err) { next(err); }
+};
+
+/**
+ * Actualiza el correo electrónico del usuario.
+ * @param {object} req - Solicitud.
+ * @param {object} res - Respuesta.
+ * @param {function} next - Siguiente middleware.
+ */
+const updateEmail = async (req, res, next) => {
+  try {
+    const user = await authService.updateEmail(req.user.id, req.body.email);
+    sendSuccess(res, { user });
+  } catch (err) { next(err); }
+};
+
+/**
+ * Actualiza la contraseña del usuario.
+ * @param {object} req - Solicitud.
+ * @param {object} res - Respuesta.
+ * @param {function} next - Siguiente middleware.
+ */
+const updatePassword = async (req, res, next) => {
+  try {
+    const { current_password, new_password } = req.body;
+    await authService.updatePassword(req.user.id, current_password, new_password);
+    sendSuccess(res, { message: 'Contraseña actualizada correctamente' });
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   register,
   login,
@@ -174,5 +214,8 @@ module.exports = {
   getMe,
   getSessions,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  updateProfile,
+  updateEmail,
+  updatePassword
 };
