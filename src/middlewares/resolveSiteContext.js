@@ -33,7 +33,7 @@ const attachProjectFromSite = async (req, res, next) => {
     }
 
     // Inyectar el projectId para que authorize() lo encuentre
-    req.params.projectId = site.project_id;
+    req.projectId = site.project_id;
     
     next();
   } catch (err) {
