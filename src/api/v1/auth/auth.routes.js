@@ -6,7 +6,12 @@ const { Router } = require('express');
 
 const controller = require('./auth.controller');
 
-const { registerRules, loginRules } = require('./auth.validator');
+const {
+  registerRules,
+  loginRules,
+  forgotPasswordRules,
+  resetPasswordRules,
+} = require('./auth.validator');
 
 const validate = require('../../../middlewares/validate');
 const authenticate = require('../../../middlewares/authenticate');
@@ -18,6 +23,8 @@ const router = Router();
 router.post('/register', authRateLimiter, registerRules, validate, controller.register);
 router.post('/login',    authRateLimiter, loginRules,    validate, controller.login);
 router.post('/refresh',  authRateLimiter, controller.refresh);
+router.post('/forgot-password', authRateLimiter, forgotPasswordRules, validate, controller.forgotPassword);
+router.post('/reset-password', authRateLimiter, resetPasswordRules, validate, controller.resetPassword);
 
 // Rutas protegidas
 router.post('/logout',     authenticate, controller.logout);
