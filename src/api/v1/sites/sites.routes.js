@@ -19,6 +19,7 @@ const resolveSiteContext = require('../../../middlewares/resolveSiteContext');
 
 // Sub-routers
 const portfolioItemsRouter = require('./modules/portfolio/items/items.routes');
+const portfolioStackRouter = require('./modules/portfolio/stack/stack.routes');
 
 // Obtener sitio por slug globalmente usando el context resolver
 router.get('/slug/:slug', resolveSiteContext, authorize("project:read"), controller.getSiteBySlug);
@@ -43,5 +44,6 @@ router.delete('/:siteId', resolveSiteContext, authorize("project:update"), contr
 
 // Sub-rutas de módulos (Requieren projectId para autorización, por lo que usan resolveSiteContext)
 router.use('/:siteId/modules/portfolio/items', resolveSiteContext, portfolioItemsRouter);
+router.use('/:siteId/modules/portfolio/stack', resolveSiteContext, portfolioStackRouter);
 
 module.exports = router;
