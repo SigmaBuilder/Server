@@ -14,7 +14,7 @@ const HTTP_STATUS = require('../constants/httpStatus');
  * @returns {string|null}
  */
 const resolveProjectId = (req) =>
-  req.params.projectId ?? req.body?.projectId ?? req.query?.projectId ?? null;
+  req.projectId ?? req.params.projectId ?? req.body?.projectId ?? req.query?.projectId ?? null;
 
 /**
  * Middleware de autorización que requiere TODOS los permisos listados.
