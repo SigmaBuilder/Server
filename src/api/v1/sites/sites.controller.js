@@ -16,7 +16,7 @@ const getSiteById = async (req, res, next) => {
   try {
     const includeProject = req.query.includeProject === 'true';
     const result = await sitesService.getSiteById(
-      req.params.projectId,
+      req.projectId,
       req.params.siteId,
       includeProject
     );
@@ -37,7 +37,7 @@ const getSiteBySlug = async (req, res, next) => {
   try {
     const includeProject = req.query.includeProject === 'true';
     const result = await sitesService.getSiteBySlug(
-      req.params.projectId,
+      req.projectId,
       req.params.slug,
       includeProject
     );
@@ -57,7 +57,7 @@ const getSiteBySlug = async (req, res, next) => {
 const updateSite = async (req, res, next) => {
   try {
     const site = await sitesService.updateSite(
-      req.params.projectId,
+      req.projectId,
       req.params.siteId,
       req.body,
     );
@@ -75,7 +75,7 @@ const updateSite = async (req, res, next) => {
  */
 const deleteSite = async (req, res, next) => {
   try {
-    await sitesService.deleteSite(req.params.projectId, req.params.siteId);
+    await sitesService.deleteSite(req.projectId, req.params.siteId);
     sendSuccess(res, null, HTTP_STATUS.NO_CONTENT);
   } catch (err) {
     next(err);
@@ -91,7 +91,7 @@ const deleteSite = async (req, res, next) => {
 const publishSite = async (req, res, next) => {
   try {
     const site = await sitesService.publishSite(
-      req.params.projectId,
+      req.projectId,
       req.params.siteId,
     );
     sendSuccess(res, { site });
@@ -109,7 +109,7 @@ const publishSite = async (req, res, next) => {
 const unpublishSite = async (req, res, next) => {
   try {
     const site = await sitesService.unpublishSite(
-      req.params.projectId,
+      req.projectId,
       req.params.siteId,
     );
     sendSuccess(res, { site });
