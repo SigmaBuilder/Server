@@ -14,6 +14,7 @@ const REQUIRED_VARS = [
   'DB_PASS',
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
+  'RESEND_API_KEY',
 ];
 
 // Verificamos que todas las variables requeridas estén definidas.
@@ -47,6 +48,9 @@ const env = {
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
     max:      parseInt(process.env.RATE_LIMIT_MAX        || '20',     10),
+  },
+  resend: {
+    apiKey: process.env.RESEND_API_KEY,
   },
 };
 
