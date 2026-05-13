@@ -19,7 +19,18 @@ const updateMemberRules = [
     .withMessage('Valid roleId (UUID) is required'),
 ];
 
+const inviteRules = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  body('roleId')
+    .isUUID()
+    .withMessage('Valid roleId (UUID) is required'),
+];
+
 module.exports = {
   addMemberRules,
-  updateMemberRules
+  updateMemberRules,
+  inviteRules
 };
