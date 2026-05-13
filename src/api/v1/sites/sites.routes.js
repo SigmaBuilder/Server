@@ -21,6 +21,7 @@ const resolveSiteContext = require('../../../middlewares/resolveSiteContext');
 const portfolioItemsRouter = require('./modules/portfolio/items/items.routes');
 const portfolioStackRouter = require('./modules/portfolio/stack/stack.routes');
 const blogCategoriesRouter = require('./modules/blog/categories/categories.routes');
+const blogPostsRouter = require('./modules/blog/posts/posts.routes');
 
 // Obtener sitio por slug globalmente usando el context resolver
 router.get('/slug/:slug', resolveSiteContext, authorize("project:read"), controller.getSiteBySlug);
@@ -47,5 +48,6 @@ router.delete('/:siteId', resolveSiteContext, authorize("project:update"), contr
 router.use('/:siteId/modules/portfolio/items', resolveSiteContext, portfolioItemsRouter);
 router.use('/:siteId/modules/portfolio/stack', resolveSiteContext, portfolioStackRouter);
 router.use('/:siteId/modules/blog/categories', resolveSiteContext, blogCategoriesRouter);
+router.use('/:siteId/modules/blog/posts', resolveSiteContext, blogPostsRouter);
 
 module.exports = router;
