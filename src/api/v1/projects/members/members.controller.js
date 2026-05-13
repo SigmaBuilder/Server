@@ -3,6 +3,7 @@
 'use strict';
 
 const membersService = require('./members.service');
+const invitationsService = require('../../invitations/invitations.service');
 const { sendSuccess } = require('../../../../utils/response');
 const HTTP_STATUS = require('../../../../constants/httpStatus');
 
@@ -66,9 +67,28 @@ const remove = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+/**
+ * Invita a un usuario a un proyecto por correo electrónico.
+ * @param {Object} req - Objeto de petición.
+ * @param {Object} res - Objeto de respuesta.
+ * @param {Function} next - Función para pasar al siguiente middleware.
+ */
+const invite = async (req, res, next) => {
+  try {
+    await invitationsService.inviteUser(
+      req.params.projectId,
+      req.user.id, // ID del invitador, sacado del token de autenticación
+      req.body.email,
+      req.body.roleId
+    );
+    sendSuccess(res, { message: 'Invitation sent successfully' }, HTTP_STATUS.CREATED);
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   getAll,
   add,
   update,
-  remove
+  remove,
+  invite
 };
