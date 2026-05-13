@@ -48,9 +48,27 @@ const resetPasswordRules = [
     .withMessage('Password must be at least 8 characters'),
 ];
 
+const updateProfileRules = [
+  body('first_name').optional().trim().notEmpty().withMessage('First name cannot be empty'),
+  body('last_name').optional().trim().notEmpty().withMessage('Last name cannot be empty'),
+  body('avatar_url').optional().isURL().withMessage('Avatar must be a valid URL')
+];
+
+const updateEmailRules = [
+  body('email').isEmail().normalizeEmail().withMessage('Valid email is required')
+];
+
+const updatePasswordRules = [
+  body('current_password').notEmpty().withMessage('Current password is required'),
+  body('new_password').isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+];
+
 module.exports = {
   registerRules,
   loginRules,
   forgotPasswordRules,
-  resetPasswordRules
+  resetPasswordRules,
+  updateProfileRules,
+  updateEmailRules,
+  updatePasswordRules
 };
