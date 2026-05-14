@@ -104,7 +104,9 @@ class MediaService {
   async ensureSiteRootFolder(projectId, siteId) {
     let folder = await db('media_folders').where({ project_id: projectId, site_id: siteId, is_system: true }).first();
     if (!folder) {
-      folder = await this.createFolder(projectId, `Site Root ${siteId}`, null, siteId, true);
+      const site = await db('sites').where({ id: siteId }).first();
+      const folderName = site ? site.slug : `Site Root ${siteId}`;
+      folder = await this.createFolder(projectId, folderName, null, siteId, true);
     }
     return folder;
   }
