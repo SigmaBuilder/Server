@@ -16,6 +16,8 @@ DROP FUNCTION IF EXISTS get_user_permissions(UUID, UUID) CASCADE;
 DROP FUNCTION IF EXISTS set_updated_at() CASCADE;
 
 -- 2. Eliminamos las tablas.
+DROP TABLE IF EXISTS media_assets CASCADE;
+DROP TABLE IF EXISTS media_folders CASCADE;
 DROP TABLE IF EXISTS blog_posts CASCADE;
 DROP TABLE IF EXISTS blog_categories CASCADE;
 DROP TABLE IF EXISTS portfolio_stack CASCADE;
@@ -190,6 +192,32 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   UNIQUE(site_id, slug)
 );
 
+-- media_folders
+CREATE TABLE IF NOT EXISTS media_folders (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  parent_id   UUID         REFERENCES media_folders(id) ON DELETE CASCADE,
+  name        VARCHAR(255) NOT NULL,
+  site_id     UUID         REFERENCES sites(id) ON DELETE CASCADE,
+  is_system   BOOLEAN      NOT NULL DEFAULT false,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- media_assets
+CREATE TABLE IF NOT EXISTS media_assets (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID         NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  folder_id   UUID         REFERENCES media_folders(id) ON DELETE CASCADE,
+  file_name   VARCHAR(255) NOT NULL,
+  file_url    VARCHAR(1024) NOT NULL,
+  file_key    VARCHAR(1024) NOT NULL,
+  mime_type   VARCHAR(100) NOT NULL,
+  size_bytes  INTEGER      NOT NULL,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
 -- ─── Índices ──────────────────────────────────────────────────────────────────
 -- Se crean índices para mejorar el rendimiento de las consultas.
 
@@ -228,6 +256,14 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token_hash ON password_rese
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_reset_tokens(expires_at);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_is_used ON password_reset_tokens(is_used);
+
+-- media
+CREATE INDEX IF NOT EXISTS idx_media_folders_project_id ON media_folders(project_id);
+CREATE INDEX IF NOT EXISTS idx_media_folders_parent_id ON media_folders(parent_id);
+CREATE INDEX IF NOT EXISTS idx_media_folders_site_id ON media_folders(site_id);
+
+CREATE INDEX IF NOT EXISTS idx_media_assets_project_id ON media_assets(project_id);
+CREATE INDEX IF NOT EXISTS idx_media_assets_folder_id ON media_assets(folder_id);
 
 -- ─── Funciones ─────────────────────────────────────────────────────────────
 -- Se crean funciones para mejorar el rendimiento de las consultas.
@@ -342,6 +378,14 @@ CREATE OR REPLACE TRIGGER trg_blog_categories_updated_at
 -- project_invitations
 CREATE OR REPLACE TRIGGER trg_project_invitations_updated_at
   BEFORE UPDATE ON project_invitations
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE OR REPLACE TRIGGER trg_media_folders_updated_at
+  BEFORE UPDATE ON media_folders
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE OR REPLACE TRIGGER trg_media_assets_updated_at
+  BEFORE UPDATE ON media_assets
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Crear roles por defecto cuando se crea un proyecto
