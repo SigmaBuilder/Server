@@ -15,6 +15,10 @@ const REQUIRED_VARS = [
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
   'RESEND_API_KEY',
+  'AWS_REGION',
+  'AWS_ACCESS_KEY_ID',
+  'AWS_SECRET_ACCESS_KEY',
+  'AWS_S3_BUCKET',
 ];
 
 // Verificamos que todas las variables requeridas estén definidas.
