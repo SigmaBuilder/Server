@@ -16,6 +16,7 @@ const authorize     = require('../../../middlewares/authorize');
 const membersRouter = require('./members/members.routes');
 const sitesRouter   = require('./sites/sites.routes');
 const rolesRouter   = require('./roles/roles.routes');
+const mediaRouter   = require('./media/media.routes');
 
 const router = Router();
 
@@ -35,6 +36,7 @@ const projectSubRouter = Router({ mergeParams: true });
 projectSubRouter.use('/members', membersRouter);
 projectSubRouter.use('/sites',   sitesRouter);
 projectSubRouter.use('/roles',   rolesRouter);
+projectSubRouter.use('/media',   mediaRouter);
 
 router.use('/:projectId', projectSubRouter);
 
