@@ -111,8 +111,8 @@ const rotate = async (oldTokenId, userId, family, meta = {}) => {
 };
 
 /**
- * Revokes a single token by its DB id.
- * @param {string} tokenId
+ * Revoca un token de refresco específico por su ID.
+ * @param {string} tokenId - ID del token.
  */
 const revokeById = async (tokenId) => {
   await db('refresh_tokens').where({ id: tokenId }).update({ is_revoked: true });

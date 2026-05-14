@@ -194,6 +194,21 @@ const getMe = async (userId) => {
 const getSessions = async (userId) => refreshTokenService.getActiveSessions(userId);
 
 /**
+ * Revoca una sesión específica del usuario.
+ * @param {string} userId - ID del usuario.
+ * @param {string} sessionId - ID de la sesión.
+ */
+const deleteSession = async (userId, sessionId) => {
+  const session = await db('refresh_tokens')
+    .where({ id: sessionId, user_id: userId })
+    .first();
+    
+  if (!session) throw new AppError('Session not found or does not belong to user', HTTP_STATUS.NOT_FOUND);
+  
+  await refreshTokenService.revokeById(sessionId);
+};
+
+/**
  * Actualiza el perfil del usuario autenticado (nombre, apellidos, avatar).
  * @param {string} userId - ID del usuario.
  * @param {object} data - Datos a actualizar.
@@ -263,6 +278,7 @@ module.exports = {
   logoutAll, 
   getMe, 
   getSessions,
+  deleteSession,
   updateProfile,
   updateEmail,
   updatePassword

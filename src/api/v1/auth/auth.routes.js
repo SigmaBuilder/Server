@@ -37,5 +37,6 @@ router.patch('/me/profile',  authenticate, updateProfileRules, validate, control
 router.patch('/me/email',    authenticate, updateEmailRules, validate, controller.updateEmail);
 router.patch('/me/password', authenticate, updatePasswordRules, validate, controller.updatePassword);
 router.get('/sessions',    authenticate, controller.getSessions);
+router.delete('/sessions/:id', authenticate, controller.deleteSession);
 
 module.exports = router;

@@ -138,6 +138,20 @@ const getSessions = async (req, res, next) => {
 };
 
 /**
+ * Revoca una sesión específica.
+ * @param {object} req - Solicitud.
+ * @param {object} res - Respuesta.
+ * @param {function} next - Siguiente middleware.
+ */
+const deleteSession = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await authService.deleteSession(req.user.id, id);
+    sendSuccess(res, { message: 'Sesión cerrada correctamente' });
+  } catch (err) { next(err); }
+};
+
+/**
  * Solicita restablecimiento de contraseña.
  * @param {object} req - Solicitud.
  * @param {object} res - Respuesta.
@@ -213,6 +227,7 @@ module.exports = {
   logoutAll,
   getMe,
   getSessions,
+  deleteSession,
   forgotPassword,
   resetPassword,
   updateProfile,
