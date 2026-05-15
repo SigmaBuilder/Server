@@ -193,6 +193,19 @@ const updateProfile = async (req, res, next) => {
 };
 
 /**
+ * Actualiza la foto de perfil del usuario.
+ * @param {object} req - Solicitud.
+ * @param {object} res - Respuesta.
+ * @param {function} next - Siguiente middleware.
+ */
+const updateAvatar = async (req, res, next) => {
+  try {
+    const user = await authService.updateAvatar(req.user.id, req.file);
+    sendSuccess(res, { user });
+  } catch (err) { next(err); }
+};
+
+/**
  * Actualiza el correo electrónico del usuario.
  * @param {object} req - Solicitud.
  * @param {object} res - Respuesta.
@@ -231,6 +244,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   updateProfile,
+  updateAvatar,
   updateEmail,
   updatePassword
 };
