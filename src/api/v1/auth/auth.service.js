@@ -9,8 +9,11 @@ const { sha256 }   = require('../../../utils/hash');
 const bcrypt       = require('bcryptjs');
 const AppError     = require('../../../utils/AppError');
 const HTTP_STATUS  = require('../../../constants/httpStatus');
+const S3StorageService = require('../../../services/storage/S3StorageService');
 
 const BCRYPT_ROUNDS = 12;
+const storageService = new S3StorageService();
+const USER_RETURNING_FIELDS = ['id', 'email', 'first_name', 'last_name', 'avatar_url', 'created_at'];
 
 /**
  * Extrae metadatos opcionales de la petición para la auditoría de tokens.
@@ -209,7 +212,7 @@ const deleteSession = async (userId, sessionId) => {
 };
 
 /**
- * Actualiza el perfil del usuario autenticado (nombre, apellidos, avatar).
+ * Actualiza el perfil del usuario autenticado (nombre y apellidos).
  * @param {string} userId - ID del usuario.
  * @param {object} data - Datos a actualizar.
  */
@@ -217,16 +220,53 @@ const updateProfile = async (userId, data) => {
   const allowedUpdates = {};
   if (data.first_name !== undefined) allowedUpdates.first_name = data.first_name;
   if (data.last_name !== undefined) allowedUpdates.last_name = data.last_name;
-  if (data.avatar_url !== undefined) allowedUpdates.avatar_url = data.avatar_url;
 
   if (Object.keys(allowedUpdates).length === 0) return null;
 
   const [updatedUser] = await db('users')
     .where({ id: userId })
     .update(allowedUpdates)
-    .returning(['id', 'email', 'first_name', 'last_name', 'avatar_url', 'created_at']);
+    .returning(USER_RETURNING_FIELDS);
 
   if (!updatedUser) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
+  return updatedUser;
+};
+
+/**
+ * Sube y asigna el avatar del usuario autenticado.
+ * @param {string} userId - ID del usuario.
+ * @param {object} file - Archivo procesado por multer.
+ */
+const updateAvatar = async (userId, file) => {
+  if (!file) throw new AppError('File is required', HTTP_STATUS.BAD_REQUEST);
+
+  const currentUser = await db('users')
+    .where({ id: userId })
+    .select('avatar_key')
+    .first();
+
+  if (!currentUser) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
+
+  const { url, key } = await storageService.uploadFile(
+    file.buffer,
+    file.originalname,
+    file.mimetype,
+    { prefix: `users/${userId}/avatar` }
+  );
+
+  const [updatedUser] = await db('users')
+    .where({ id: userId })
+    .update({ avatar_url: url, avatar_key: key })
+    .returning(USER_RETURNING_FIELDS);
+
+  if (currentUser.avatar_key) {
+    try {
+      await storageService.deleteFile(currentUser.avatar_key);
+    } catch (_err) {
+      // Avatar cleanup should not fail the profile update after the DB commit.
+    }
+  }
+
   return updatedUser;
 };
 
@@ -244,7 +284,7 @@ const updateEmail = async (userId, newEmail) => {
   const [updatedUser] = await db('users')
     .where({ id: userId })
     .update({ email: newEmail })
-    .returning(['id', 'email', 'first_name', 'last_name', 'avatar_url', 'created_at']);
+    .returning(USER_RETURNING_FIELDS);
 
   if (!updatedUser) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
   return updatedUser;
@@ -280,6 +320,7 @@ module.exports = {
   getSessions,
   deleteSession,
   updateProfile,
+  updateAvatar,
   updateEmail,
   updatePassword
 };

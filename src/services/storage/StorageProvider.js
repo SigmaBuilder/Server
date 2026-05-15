@@ -8,7 +8,7 @@ class StorageProvider {
    * @param {string} mimeType - The mime type of the file
    * @returns {Promise<{ url: string, key: string }>}
    */
-  async uploadFile(fileBuffer, fileName, mimeType) {
+  async uploadFile(fileBuffer, fileName, mimeType, options = {}) {
     throw new Error('Method not implemented.');
   }
 
