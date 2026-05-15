@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS users (
   first_name    VARCHAR(100) NOT NULL,
   last_name     VARCHAR(100) NOT NULL,
   avatar_url    TEXT,
+  avatar_key    TEXT,
   is_active     BOOLEAN      NOT NULL DEFAULT true,
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
