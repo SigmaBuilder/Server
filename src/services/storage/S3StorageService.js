@@ -28,9 +28,10 @@ class S3StorageService extends StorageProvider {
     this.s3Client = new S3Client(clientConfig);
   }
 
-  async uploadFile(fileBuffer, fileName, mimeType) {
+  async uploadFile(fileBuffer, fileName, mimeType, options = {}) {
     const ext = path.extname(fileName);
-    const key = `${uuidv4()}${ext}`; // Generate unique key
+    const prefix = options.prefix ? `${options.prefix.replace(/^\/+|\/+$/g, '')}/` : '';
+    const key = `${prefix}${uuidv4()}${ext}`; // Generate unique key
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
