@@ -50,8 +50,7 @@ const resetPasswordRules = [
 
 const updateProfileRules = [
   body('first_name').optional().trim().notEmpty().withMessage('First name cannot be empty'),
-  body('last_name').optional().trim().notEmpty().withMessage('Last name cannot be empty'),
-  body('avatar_url').optional().isURL().withMessage('Avatar must be a valid URL')
+  body('last_name').optional().trim().notEmpty().withMessage('Last name cannot be empty')
 ];
 
 const updateEmailRules = [
