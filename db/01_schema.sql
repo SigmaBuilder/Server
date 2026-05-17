@@ -143,7 +143,18 @@ CREATE TABLE IF NOT EXISTS sites (
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
--- portfolio
+-- portfolio_sections
+CREATE TABLE IF NOT EXISTS portfolio_sections (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  site_id     UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  title       VARCHAR(255) NOT NULL,
+  content     JSONB        NOT NULL DEFAULT '{}'::jsonb,
+  sort_order  INT          NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- portfolio_items
 CREATE TABLE IF NOT EXISTS portfolio_items (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id     UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
@@ -236,6 +247,9 @@ CREATE INDEX IF NOT EXISTS idx_sites_slug ON sites(slug);
 
 -- sites: lookup por project_id
 CREATE INDEX IF NOT EXISTS idx_sites_project_id ON sites(project_id);
+
+-- portfolio_sections: lookup por sitio
+CREATE INDEX IF NOT EXISTS idx_portfolio_sections_site_id ON portfolio_sections(site_id);
 
 -- portfolio_items: lookup por sitio
 CREATE INDEX IF NOT EXISTS idx_portfolio_items_site_id ON portfolio_items(site_id);
@@ -363,6 +377,11 @@ CREATE OR REPLACE TRIGGER trg_sites_updated_at
 -- portfolio_items
 CREATE OR REPLACE TRIGGER trg_portfolio_items_updated_at
   BEFORE UPDATE ON portfolio_items
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- portfolio_sections
+CREATE OR REPLACE TRIGGER trg_portfolio_sections_updated_at
+  BEFORE UPDATE ON portfolio_sections
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- blog_posts
