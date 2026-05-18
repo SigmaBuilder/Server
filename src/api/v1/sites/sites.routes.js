@@ -18,6 +18,7 @@ router.use(authenticate);
 const resolveSiteContext = require('../../../middlewares/resolveSiteContext');
 
 // Sub-routers
+const portfolioSectionsRouter = require('./modules/portfolio/sections/sections.routes');
 const portfolioItemsRouter = require('./modules/portfolio/items/items.routes');
 const portfolioStackRouter = require('./modules/portfolio/stack/stack.routes');
 const blogCategoriesRouter = require('./modules/blog/categories/categories.routes');
@@ -45,6 +46,7 @@ router.delete('/:siteId', resolveSiteContext, authorize("project:update"), contr
 
 
 // Sub-rutas de módulos (Requieren projectId para autorización, por lo que usan resolveSiteContext)
+router.use('/:siteId/modules/portfolio/sections', resolveSiteContext, portfolioSectionsRouter);
 router.use('/:siteId/modules/portfolio/items', resolveSiteContext, portfolioItemsRouter);
 router.use('/:siteId/modules/portfolio/stack', resolveSiteContext, portfolioStackRouter);
 router.use('/:siteId/modules/blog/categories', resolveSiteContext, blogCategoriesRouter);
