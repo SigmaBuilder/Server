@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS sites (
   name          VARCHAR(255) NOT NULL,
   template_type VARCHAR(50)  NOT NULL DEFAULT 'standard',  
   status        VARCHAR(50)  NOT NULL DEFAULT 'draft',
-  features      JSONB        NOT NULL DEFAULT '{}'::jsonb,
+  features      JSONB        NOT NULL DEFAULT '{"modules":{}}'::jsonb,
   content       JSONB        NOT NULL DEFAULT '{}'::jsonb,
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()

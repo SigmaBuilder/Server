@@ -36,8 +36,9 @@ const createSite = async (projectId, siteData) => {
         name: siteData.name,
         template_type: siteData.templateType,
         status: 'draft',
+        features: { modules: {} },
       })
-      .returning(['id', 'slug', 'name', 'template_type', 'status', 'created_at']);
+      .returning(['id', 'slug', 'name', 'template_type', 'status', 'features', 'created_at', 'updated_at']);
     
     return newSite;
 
