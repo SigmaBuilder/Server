@@ -17,6 +17,12 @@ const createRules = [
     .trim()
     .matches(/^[a-z0-9-]+$/)
     .withMessage('Slug must contain only lowercase letters, numbers, and hyphens (-)'),
+  body('excerpt')
+    .optional()
+    .isString(),
+  body('cover_image')
+    .optional()
+    .isString(),
   body('content')
     .notEmpty()
     .withMessage('Content is required')
@@ -25,10 +31,11 @@ const createRules = [
     .optional({ checkFalsy: true }) // Permite null o strings vacíos
     .isUUID()
     .withMessage('Category ID must be a valid UUID'),
-  body('is_published')
+  body('status')
     .optional()
-    .isBoolean()
-    .withMessage('is_published must be a boolean value')
+    .isString()
+    .isIn(['draft', 'published', 'archived'])
+    .withMessage('Status must be draft, published, or archived')
 ];
 
 const updateRules = [
@@ -42,6 +49,12 @@ const updateRules = [
     .trim()
     .matches(/^[a-z0-9-]+$/)
     .withMessage('Slug must contain only lowercase letters, numbers, and hyphens (-)'),
+  body('excerpt')
+    .optional()
+    .isString(),
+  body('cover_image')
+    .optional()
+    .isString(),
   body('content')
     .optional()
     .isString(),
@@ -49,10 +62,11 @@ const updateRules = [
     .optional({ checkFalsy: true })
     .isUUID()
     .withMessage('Category ID must be a valid UUID'),
-  body('is_published')
+  body('status')
     .optional()
-    .isBoolean()
-    .withMessage('is_published must be a boolean value')
+    .isString()
+    .isIn(['draft', 'published', 'archived'])
+    .withMessage('Status must be draft, published, or archived')
 ];
 
 module.exports = {

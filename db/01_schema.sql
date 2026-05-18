@@ -197,8 +197,10 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   category_id  UUID         REFERENCES blog_categories(id) ON DELETE SET NULL,
   title        VARCHAR(255) NOT NULL,
   slug         VARCHAR(255) NOT NULL,
+  excerpt      TEXT,
+  cover_image  TEXT,
   content      TEXT         NOT NULL, 
-  is_published BOOLEAN      NOT NULL DEFAULT false,
+  status       VARCHAR(50)  NOT NULL DEFAULT 'draft',
   created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
   UNIQUE(site_id, slug)
