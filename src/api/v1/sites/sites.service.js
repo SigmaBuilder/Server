@@ -109,7 +109,7 @@ const updateSite = async (projectId, siteId, updateData) => {
         ...updateData,
         updated_at: new Date(),
       })
-      .returning(['id', 'slug', 'name', 'template_type', 'status', 'features', 'content', 'created_at', 'updated_at']);
+      .returning(['id', 'project_id', 'slug', 'name', 'template_type', 'status', 'features', 'content', 'created_at', 'updated_at']);
     
     if (!updatedSite) throw new AppError('Could not update site', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     
@@ -149,7 +149,7 @@ const publishSite = async (projectId, siteId) => {
       status: 'public',
       updated_at: new Date(),
     })
-    .returning(['id', 'slug', 'name', 'template_type', 'status', 'created_at', 'updated_at']);
+    .returning(['id', 'project_id', 'slug', 'name', 'template_type', 'status', 'features', 'content', 'created_at', 'updated_at']);
 
   if (!updatedSite) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
 
@@ -169,7 +169,7 @@ const unpublishSite = async (projectId, siteId) => {
       status: 'draft',
       updated_at: new Date(),
     })
-    .returning(['id', 'slug', 'name', 'template_type', 'status', 'created_at', 'updated_at']);
+    .returning(['id', 'project_id', 'slug', 'name', 'template_type', 'status', 'features', 'content', 'created_at', 'updated_at']);
 
   if (!updatedSite) throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
 
