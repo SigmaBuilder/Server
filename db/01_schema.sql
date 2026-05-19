@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS portfolio_stack CASCADE;
 DROP TABLE IF EXISTS portfolio_items CASCADE;
 DROP TABLE IF EXISTS pages CASCADE;
 DROP TABLE IF EXISTS pages CASCADE;
+DROP TABLE IF EXISTS pages CASCADE;
 DROP TABLE IF EXISTS sites CASCADE;
 DROP TABLE IF EXISTS project_invitations CASCADE;
 DROP TABLE IF EXISTS project_members CASCADE;
@@ -131,6 +132,21 @@ CREATE TABLE IF NOT EXISTS project_invitations (
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+-- pages
+CREATE TABLE IF NOT EXISTS pages (
+  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  site_id     UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  slug        VARCHAR(255) NOT NULL,
+  title       VARCHAR(255) NOT NULL,
+  html        TEXT         NOT NULL DEFAULT '',
+  css         TEXT         NOT NULL DEFAULT '',
+  js          TEXT         NOT NULL DEFAULT '',
+  status      VARCHAR(50)  NOT NULL DEFAULT 'draft',
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  UNIQUE (site_id, slug)
+);
+
 -- sites
 CREATE TABLE IF NOT EXISTS sites (
   id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -155,6 +171,7 @@ CREATE TABLE IF NOT EXISTS pages (
   css         TEXT         NOT NULL DEFAULT '',
   js          TEXT         NOT NULL DEFAULT '',
   status      VARCHAR(50)  NOT NULL DEFAULT 'draft',
+  is_home     BOOLEAN      NOT NULL DEFAULT false,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
   UNIQUE (site_id, slug)
@@ -262,6 +279,9 @@ CREATE INDEX IF NOT EXISTS idx_project_members_user_id    ON project_members(use
 CREATE INDEX IF NOT EXISTS idx_project_members_project_id ON project_members(project_id);
 
 -- pages: lookup por sitio
+CREATE INDEX IF NOT EXISTS idx_pages_site_id ON pages(site_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_one_home_per_site ON pages (site_id) WHERE (is_home = true);
+
 CREATE INDEX IF NOT EXISTS idx_pages_site_id ON pages(site_id);
 
 -- sites: lookup por slug
@@ -391,6 +411,10 @@ CREATE OR REPLACE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+
+CREATE OR REPLACE TRIGGER trg_pages_updated_at
+  BEFORE UPDATE ON pages
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE OR REPLACE TRIGGER trg_pages_updated_at
   BEFORE UPDATE ON pages
