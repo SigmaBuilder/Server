@@ -1,0 +1,70 @@
+'use strict';
+
+const pagesService = require('./pages.service');
+
+const getPages = async (req, res, next) => {
+  try {
+    const { siteId } = req.params;
+    const pages = await pagesService.getPages(siteId);
+    res.json({ success: true, data: pages });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getPageById = async (req, res, next) => {
+  try {
+    const { siteId, pageId } = req.params;
+    const page = await pagesService.getPageById(siteId, pageId);
+    if (!page) {
+      return res.status(404).json({ success: false, error: 'Page not found' });
+    }
+    res.json({ success: true, data: page });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createPage = async (req, res, next) => {
+  try {
+    const { siteId } = req.params;
+    const page = await pagesService.createPage(siteId, req.body);
+    res.status(201).json({ success: true, data: page });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updatePage = async (req, res, next) => {
+  try {
+    const { siteId, pageId } = req.params;
+    const page = await pagesService.updatePage(siteId, pageId, req.body);
+    if (!page) {
+      return res.status(404).json({ success: false, error: 'Page not found' });
+    }
+    res.json({ success: true, data: page });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deletePage = async (req, res, next) => {
+  try {
+    const { siteId, pageId } = req.params;
+    const deleted = await pagesService.deletePage(siteId, pageId);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Page not found' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getPages,
+  getPageById,
+  createPage,
+  updatePage,
+  deletePage
+};

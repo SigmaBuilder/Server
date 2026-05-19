@@ -3,10 +3,13 @@
 'use strict';
 
 const { Router } = require('express');
+
 const controller = require('./sites.controller');
+
 const authenticate = require('../../../middlewares/authenticate');
 const authorize = require('../../../middlewares/authorize');
 const validate = require('../../../middlewares/validate');
+
 const { updateSiteRules } = require('./sites.validator');
 
 const router = Router();
@@ -23,6 +26,7 @@ const portfolioItemsRouter = require('./modules/portfolio/items/items.routes');
 const portfolioStackRouter = require('./modules/portfolio/stack/stack.routes');
 const blogCategoriesRouter = require('./modules/blog/categories/categories.routes');
 const blogPostsRouter = require('./modules/blog/posts/posts.routes');
+const pagesRouter = require('./modules/pages/pages.routes');
 
 // Obtener sitio por slug globalmente usando el context resolver
 router.get('/slug/:slug', resolveSiteContext, authorize("project:read"), controller.getSiteBySlug);
@@ -51,5 +55,6 @@ router.use('/:siteId/modules/portfolio/items', resolveSiteContext, portfolioItem
 router.use('/:siteId/modules/portfolio/stack', resolveSiteContext, portfolioStackRouter);
 router.use('/:siteId/modules/blog/categories', resolveSiteContext, blogCategoriesRouter);
 router.use('/:siteId/modules/blog/posts', resolveSiteContext, blogPostsRouter);
+router.use('/:siteId/pages', resolveSiteContext, pagesRouter);
 
 module.exports = router;
