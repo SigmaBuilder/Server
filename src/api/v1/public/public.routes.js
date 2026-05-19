@@ -17,6 +17,9 @@ const router = Router();
 // 1. Preferencias del sitio e información general
 router.get('/sites/:slug', resolvePublicSiteContext, controller.getPublicSiteInfo);
 
+router.get('/sites/:slug/render', resolvePublicSiteContext, controller.getPublicPage);
+router.get('/sites/:slug/render/:pageSlug', resolvePublicSiteContext, controller.getPublicPage);
+
 // 2. Módulos del sitio (rutas anidadas y con middleware de activación específico)
 router.use(
   '/sites/:slug/modules/portfolio', 
