@@ -48,6 +48,19 @@ const updatePage = async (req, res, next) => {
   }
 };
 
+const setHomePage = async (req, res, next) => {
+  try {
+    const { siteId, pageId } = req.params;
+    const page = await pagesService.setHomePage(siteId, pageId);
+    if (!page) {
+      return res.status(404).json({ success: false, error: 'Page not found' });
+    }
+    res.json({ success: true, data: page });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const deletePage = async (req, res, next) => {
   try {
     const { siteId, pageId } = req.params;
@@ -57,6 +70,9 @@ const deletePage = async (req, res, next) => {
     }
     res.status(204).send();
   } catch (error) {
+    if (error.message === 'HOME_PAGE_DELETION') {
+      return res.status(400).json({ success: false, error: 'Cannot delete the home page. Set another page as home first.' });
+    }
     next(error);
   }
 };
@@ -66,5 +82,6 @@ module.exports = {
   getPageById,
   createPage,
   updatePage,
+  setHomePage,
   deletePage
 };
