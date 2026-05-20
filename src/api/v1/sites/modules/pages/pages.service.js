@@ -10,14 +10,6 @@ const getPageById = async (siteId, pageId) => {
   return db('pages').where({ site_id: siteId, id: pageId }).first();
 };
 
-const getPageBySlug = async (siteId, slug) => {
-  return db('pages').where({ site_id: siteId, slug }).first();
-};
-
-const getHomePage = async (siteId) => {
-  return db('pages').where({ site_id: siteId, is_home: true }).first();
-};
-
 const createPage = async (siteId, data) => {
   const { count } = await db('pages').where({ site_id: siteId }).count('* as count').first();
   const isHome = parseInt(count) === 0;
@@ -81,8 +73,6 @@ const deletePage = async (siteId, pageId) => {
 module.exports = {
   getPages,
   getPageById,
-  getPageBySlug,
-  getHomePage,
   createPage,
   updatePage,
   setHomePage,
