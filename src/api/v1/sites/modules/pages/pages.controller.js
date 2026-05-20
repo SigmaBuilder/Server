@@ -2,11 +2,14 @@
 
 const pagesService = require('./pages.service');
 
+const { getPaginationParams, formatPaginatedResponse } = require('../../../../../utils/pagination');
+
 const getPages = async (req, res, next) => {
   try {
     const { siteId } = req.params;
-    const pages = await pagesService.getPages(siteId);
-    res.json({ success: true, data: pages });
+    const { page, limit, search } = getPaginationParams(req);
+    const { data, total } = await pagesService.getPages(siteId, { page, limit, search });
+    res.json({ success: true, data: formatPaginatedResponse(data, total, page, limit) });
   } catch (error) {
     next(error);
   }

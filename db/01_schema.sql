@@ -23,8 +23,6 @@ DROP TABLE IF EXISTS blog_categories CASCADE;
 DROP TABLE IF EXISTS portfolio_stack CASCADE;
 DROP TABLE IF EXISTS portfolio_items CASCADE;
 DROP TABLE IF EXISTS pages CASCADE;
-DROP TABLE IF EXISTS pages CASCADE;
-DROP TABLE IF EXISTS pages CASCADE;
 DROP TABLE IF EXISTS sites CASCADE;
 DROP TABLE IF EXISTS project_invitations CASCADE;
 DROP TABLE IF EXISTS project_members CASCADE;
@@ -132,21 +130,6 @@ CREATE TABLE IF NOT EXISTS project_invitations (
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
--- pages
-CREATE TABLE IF NOT EXISTS pages (
-  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  site_id     UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
-  slug        VARCHAR(255) NOT NULL,
-  title       VARCHAR(255) NOT NULL,
-  html        TEXT         NOT NULL DEFAULT '',
-  css         TEXT         NOT NULL DEFAULT '',
-  js          TEXT         NOT NULL DEFAULT '',
-  status      VARCHAR(50)  NOT NULL DEFAULT 'draft',
-  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  UNIQUE (site_id, slug)
-);
-
 -- sites
 CREATE TABLE IF NOT EXISTS sites (
   id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -249,7 +232,7 @@ CREATE TABLE IF NOT EXISTS media_folders (
   site_id     UUID         REFERENCES sites(id) ON DELETE CASCADE,
   is_system   BOOLEAN      NOT NULL DEFAULT false,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+  updated_at  TIMESTAMPTZ  NOT NULL DEFmcAULT now()
 );
 
 -- media_assets
@@ -411,10 +394,6 @@ CREATE OR REPLACE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-
-CREATE OR REPLACE TRIGGER trg_pages_updated_at
-  BEFORE UPDATE ON pages
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE OR REPLACE TRIGGER trg_pages_updated_at
   BEFORE UPDATE ON pages
