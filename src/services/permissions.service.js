@@ -18,7 +18,7 @@ const HTTP_STATUS  = require('../constants/httpStatus');
  */
 const getUserPermissions = async (userId, projectId) => {
   const result = await db.raw( 
-    'SELECT action FROM get_user_permissions(?, ?)',
+    'SELECT action FROM get_user_permissions(?::uuid, ?::uuid)',
     [userId, projectId],
   );
 
