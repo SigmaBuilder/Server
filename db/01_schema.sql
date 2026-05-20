@@ -132,21 +132,6 @@ CREATE TABLE IF NOT EXISTS project_invitations (
   updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
--- pages
-CREATE TABLE IF NOT EXISTS pages (
-  id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-  site_id     UUID         NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
-  slug        VARCHAR(255) NOT NULL,
-  title       VARCHAR(255) NOT NULL,
-  html        TEXT         NOT NULL DEFAULT '',
-  css         TEXT         NOT NULL DEFAULT '',
-  js          TEXT         NOT NULL DEFAULT '',
-  status      VARCHAR(50)  NOT NULL DEFAULT 'draft',
-  created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  UNIQUE (site_id, slug)
-);
-
 -- sites
 CREATE TABLE IF NOT EXISTS sites (
   id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
