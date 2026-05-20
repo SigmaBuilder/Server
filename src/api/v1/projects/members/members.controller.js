@@ -75,13 +75,13 @@ const remove = async (req, res, next) => {
  */
 const invite = async (req, res, next) => {
   try {
-    await invitationsService.inviteUser(
+    const inviteResult = await invitationsService.inviteUser(
       req.params.projectId,
       req.user.id, // ID del invitador, sacado del token de autenticación
       req.body.email,
       req.body.roleId
     );
-    sendSuccess(res, { message: 'Invitation sent successfully' }, HTTP_STATUS.CREATED);
+    sendSuccess(res, { message: 'Invitation sent successfully', token: inviteResult?.token }, HTTP_STATUS.CREATED);
   } catch (err) { next(err); }
 };
 
