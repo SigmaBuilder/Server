@@ -2,31 +2,52 @@
 
 const db = require('../../../../../config/db');
 
-const getPages = async (siteId) => {
-  return db('pages').where({ site_id: siteId }).orderBy('created_at', 'desc');
+const getPages = async (siteId, { page = 1, limit = 10, search = "" } = {}) => {
+  const query = db('pages').where({ site_id: siteId });
+  if (search) {
+    query.andWhere(function () {
+      this.where('title', 'ilike', `%${search}%`).orWhere('slug', 'ilike', `%${search}%`)
+    });
+  }
+  const [{ count }] = await query.clone().count('id');
+  const total = parseInt(count, 10);
+  const data = await query.orderBy('created_at', 'desc')
+    .limit(limit)
+    .offset((page - 1) * limit);
+  return { data, total };
 };
 
 const getPageById = async (siteId, pageId) => {
   return db('pages').where({ site_id: siteId, id: pageId }).first();
 };
 
+const AppError = require('../../../../../utils/AppError');
+const HTTP_STATUS = require('../../../../../constants/httpStatus');
+
 const createPage = async (siteId, data) => {
   const { count } = await db('pages').where({ site_id: siteId }).count('* as count').first();
   const isHome = parseInt(count) === 0;
 
-  const [newPage] = await db('pages')
-    .insert({
-      site_id: siteId,
-      slug: data.slug,
-      title: data.title,
-      html: data.html || '',
-      css: data.css || '',
-      js: data.js || '',
-      status: data.status || 'draft',
-      is_home: isHome
-    })
-    .returning('*');
-  return newPage;
+  try {
+    const [newPage] = await db('pages')
+      .insert({
+        site_id: siteId,
+        slug: data.slug,
+        title: data.title,
+        html: data.html || '',
+        css: data.css || '',
+        js: data.js || '',
+        status: data.status || 'draft',
+        is_home: isHome
+      })
+      .returning('*');
+    return newPage;
+  } catch (err) {
+    if (err.code === '23505') {
+      throw new AppError('A page with this slug already exists for this site.', HTTP_STATUS.CONFLICT);
+    }
+    throw err;
+  }
 };
 
 const setHomePage = async (siteId, pageId) => {
@@ -50,11 +71,18 @@ const updatePage = async (siteId, pageId, data) => {
   delete updateData.site_id;
   delete updateData.created_at;
 
-  const [updatedPage] = await db('pages')
-    .where({ site_id: siteId, id: pageId })
-    .update(updateData)
-    .returning('*');
-  return updatedPage;
+  try {
+    const [updatedPage] = await db('pages')
+      .where({ site_id: siteId, id: pageId })
+      .update(updateData)
+      .returning('*');
+    return updatedPage;
+  } catch (err) {
+    if (err.code === '23505') {
+      throw new AppError('A page with this slug already exists for this site.', HTTP_STATUS.CONFLICT);
+    }
+    throw err;
+  }
 };
 
 const deletePage = async (siteId, pageId) => {
