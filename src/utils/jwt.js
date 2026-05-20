@@ -15,6 +15,8 @@ const HTTP_STATUS = require('../constants/httpStatus');
 const signAccessToken = (payload) =>
   jwt.sign(payload, env.jwt.accessSecret, { expiresIn: env.jwt.accessExpiresIn });
 
+const crypto = require('crypto');
+
 /**
  * Firma un token de actualización de larga duración.
  * El token raw se almacena como un hash SHA-256 en la DB; el token en sí va en la cookie.
@@ -22,7 +24,7 @@ const signAccessToken = (payload) =>
  * @returns {string} JWT firmado
  */
 const signRefreshToken = (payload) =>
-  jwt.sign(payload, env.jwt.refreshSecret, { expiresIn: env.jwt.refreshExpiresIn });
+  jwt.sign({ ...payload, jti: crypto.randomUUID() }, env.jwt.refreshSecret, { expiresIn: env.jwt.refreshExpiresIn });
 
 /**
  * Verifica y decodifica un token de acceso.
