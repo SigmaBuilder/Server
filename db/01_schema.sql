@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS media_folders (
   site_id     UUID         REFERENCES sites(id) ON DELETE CASCADE,
   is_system   BOOLEAN      NOT NULL DEFAULT false,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ  NOT NULL DEFmcAULT now()
+  updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
 -- media_assets
