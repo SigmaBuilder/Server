@@ -11,11 +11,19 @@ const HTTP_STATUS = require('../../../../../../constants/httpStatus');
  * @param {string} siteId - ID del sitio.
  * @returns {Promise<Array<Object>>} - Lista de elementos del stack del portfolio.
  */
-const getAll = async (siteId) => {
-  const data = await db('portfolio_stack')
-    .where({ site_id: siteId })
-    .orderBy('created_at', 'asc');
-  return data;
+const getAll = async (siteId, { page = 1, limit = 20, search = "" } = {}) => {
+  const query = db('portfolio_stack').where({ site_id: siteId });
+  if (search) {
+    query.andWhere(function () {
+      this.where('name', 'ilike', `%${search}%`)
+    });
+  }
+  const [{ count }] = await query.clone().count('id');
+  const total = parseInt(count, 10);
+  const data = await query.orderBy('created_at', 'asc')
+    .limit(limit)
+    .offset((page - 1) * limit);
+  return { data, total };
 };
 
 /**

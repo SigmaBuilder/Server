@@ -12,10 +12,13 @@ const HTTP_STATUS = require('../../../../../../constants/httpStatus');
  * @param {Object} res - Objeto de respuesta.
  * @param {Function} next - Función para pasar al siguiente middleware.
  */
+const { getPaginationParams, formatPaginatedResponse } = require('../../../../../../utils/pagination');
+
 const getAll = async (req, res, next) => {
   try {
-    const data = await service.getAll(req.params.siteId);
-    sendSuccess(res, { portfolioStack: data });
+    const { page, limit, search } = getPaginationParams(req);
+    const { data, total } = await service.getAll(req.params.siteId, { page, limit, search });
+    sendSuccess(res, formatPaginatedResponse(data, total, page, limit));
   } catch (err) {
     next(err);
   }
