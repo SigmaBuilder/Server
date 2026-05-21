@@ -15,6 +15,7 @@ const blogRoutes = require('./modules/blog/blog.routes');
 const router = Router();
 
 // 1. Preferencias del sitio e información general
+router.get('/sites/:slug/docs', resolvePublicSiteContext, controller.getSiteDocs);
 router.get('/sites/:slug', resolvePublicSiteContext, controller.getPublicSiteInfo);
 
 router.get('/sites/:slug/render', resolvePublicSiteContext, controller.getPublicPage);

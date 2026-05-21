@@ -20,7 +20,15 @@ const resolvePublicSiteContext = async (req, res, next) => {
 
     const site = await db('sites').where({ slug }).first();
 
-    if (!site || site.status !== 'public') {
+    if (!site) {
+      throw new AppError('Site not found', HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Permitir acceso si es la ruta de docs, o si viene con el flag preview=true
+    const isDocs = req.path.endsWith('/docs');
+    const isPreview = req.query.preview === 'true';
+
+    if (!isDocs && !isPreview && site.status !== 'public') {
       throw new AppError('Site not found or not public', HTTP_STATUS.NOT_FOUND);
     }
 

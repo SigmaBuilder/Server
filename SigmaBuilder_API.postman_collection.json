@@ -4108,13 +4108,15 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "// El render devuelve { success: true, data: page }",
+                  "// El render devuelve { success: true, data: { page, site } }",
                   "pm.test('Datos: renderiza la página de inicio', function () {",
                   "    const res = pm.response.json();",
                   "    pm.expect(res).to.have.property('success', true);",
                   "    pm.expect(res.data).to.be.an('object');",
-                  "    pm.expect(res.data).to.have.property('id');",
-                  "    pm.expect(res.data).to.have.property('is_home', true);",
+                  "    pm.expect(res.data).to.have.property('page');",
+                  "    pm.expect(res.data.page).to.have.property('id');",
+                  "    pm.expect(res.data.page).to.have.property('is_home', true);",
+                  "    pm.expect(res.data).to.have.property('site');",
                   "});"
                 ]
               }
@@ -4156,12 +4158,15 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "// El render por slug devuelve { success: true, data: page }",
+                  "// El render por slug devuelve { success: true, data: { page, site } }",
                   "pm.test('Datos: página renderizada por slug', function () {",
                   "    const res = pm.response.json();",
                   "    pm.expect(res).to.have.property('success', true);",
-                  "    pm.expect(res.data).to.have.property('slug');",
-                  "    pm.expect(res.data.slug).to.eql(pm.collectionVariables.get('testPageSlug'));",
+                  "    pm.expect(res.data).to.be.an('object');",
+                  "    pm.expect(res.data).to.have.property('page');",
+                  "    pm.expect(res.data.page).to.have.property('slug');",
+                  "    pm.expect(res.data.page.slug).to.eql(pm.collectionVariables.get('testPageSlug'));",
+                  "    pm.expect(res.data).to.have.property('site');",
                   "});"
                 ]
               }
