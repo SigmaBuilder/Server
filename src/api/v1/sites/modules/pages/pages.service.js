@@ -1,6 +1,9 @@
 'use strict';
 
 const db = require('../../../../../config/db');
+const AppError = require('../../../../../utils/AppError');
+const HTTP_STATUS = require('../../../../../constants/httpStatus');
+
 
 const getPages = async (siteId, { page = 1, limit = 10, search = "" } = {}) => {
   const query = db('pages').where({ site_id: siteId });
@@ -21,8 +24,22 @@ const getPageById = async (siteId, pageId) => {
   return db('pages').where({ site_id: siteId, id: pageId }).first();
 };
 
-const AppError = require('../../../../../utils/AppError');
-const HTTP_STATUS = require('../../../../../constants/httpStatus');
+/**
+ * Obtiene la página marcada como home de un sitio.
+ * Usada por el endpoint público /render (sin slug).
+ */
+const getHomePage = async (siteId) => {
+  return db('pages').where({ site_id: siteId, is_home: true }).first();
+};
+
+/**
+ * Obtiene una página por su slug dentro de un sitio.
+ * Usada por el endpoint público /render/:pageSlug.
+ */
+const getPageBySlug = async (siteId, slug) => {
+  return db('pages').where({ site_id: siteId, slug }).first();
+};
+
 
 const createPage = async (siteId, data) => {
   const { count } = await db('pages').where({ site_id: siteId }).count('* as count').first();
@@ -101,6 +118,8 @@ const deletePage = async (siteId, pageId) => {
 module.exports = {
   getPages,
   getPageById,
+  getHomePage,
+  getPageBySlug,
   createPage,
   updatePage,
   setHomePage,

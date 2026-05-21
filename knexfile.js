@@ -5,7 +5,8 @@
 
 // Importamos path y dotenv para usar variables de entorno.
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+require('dotenv').config({ path: path.resolve(__dirname, envFile) });
 
 /**
  * @type {import('knex').Knex.Config}

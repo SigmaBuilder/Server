@@ -43,6 +43,13 @@ const sendMail = async (to, subject, templateName, context) => {
   try {
     const html = compileTemplate(templateName, context);
     
+    // En entorno de pruebas mockeamos el envío para que el CI/CD y tests locales no fallen
+    // por usar una API key dummy.
+    if (env.nodeEnv === 'test') {
+      console.log(`[Email Service Mock] Simulación de envío de correo a: ${to} - Asunto: "${subject}"`);
+      return { id: 'mocked_email_id_for_testing' };
+    }
+
     // NOTA: 'onboarding@resend.dev' es el dominio de prueba.
     // Para producción debe configurarse un dominio verificado en Resend.
     const response = await resend.emails.send({

@@ -78,6 +78,8 @@ const inviteUser = async (projectId, inviterId, email, roleId) => {
       year: new Date().getFullYear()
     }
   );
+
+  return { token };
 };
 
 /**

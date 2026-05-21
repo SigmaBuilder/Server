@@ -84,7 +84,7 @@ const remove = async (req, res, next) => {
 const getPermissions = async (req, res, next) => {
   try {
     const role = await rolesService.getRoleById(req.params.roleId);
-    sendSuccess(res, { permissions: role.role_permissions });
+    sendSuccess(res, { permissions: role.permissions });
   } catch (err) { next(err); }
 };
 

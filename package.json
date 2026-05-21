@@ -5,7 +5,14 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "newman": "newman run SigmaBuilder_API.postman_collection.json -r cli",
+    "test:unit": "jest --verbose"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/test"],
+    "testMatch": ["**/*.test.js"]
   },
   "repository": {
     "type": "git",
@@ -37,6 +44,8 @@
     "uuid": "^14.0.0"
   },
   "devDependencies": {
+    "jest": "^30.4.2",
+    "newman": "^6.2.2",
     "nodemon": "^3.1.14"
   }
 }
