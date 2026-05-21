@@ -1,13 +1,5 @@
 /**
  * Pruebas unitarias para src/utils/logger.js
- *
- * Módulo testeado: logger — objeto con métodos error, warn, info, debug
- * que formatean mensajes con timestamp y nivel, y los envían a console.
- *
- * Estrategia de mocking:
- *  - Se mockea src/config/env para controlar isProduction.
- *  - Se espían los métodos de console para verificar que se llaman correctamente.
- *  - Se usa jest.isolateModules() para recargar el módulo con distintas configs.
  */
 
 'use strict';
