@@ -1,0 +1,4991 @@
+{
+  "info": {
+    "name": "SigmaBuilder API",
+    "description": "Colección de pruebas automatizadas para la API de SigmaBuilder.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "run_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "session_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "project_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "role_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "permission_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "folder_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "site_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "page_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "post_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "section_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "item_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "stack_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invite_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "inviteEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testSlug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPageSlug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testCategorySlug",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPostSlug",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Generar un ID único para esta ejecución (permite repetir los tests sin conflictos)",
+          "if (!pm.collectionVariables.get('run_id')) {",
+          "    const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);",
+          "    pm.collectionVariables.set('run_id', id);",
+          "",
+          "    // Credenciales únicas por ejecución",
+          "    pm.collectionVariables.set('testEmail', 'test_' + id + '@example.com');",
+          "    pm.collectionVariables.set('testPassword', 'TestPass123!');",
+          "",
+          "    // Slugs únicos por ejecución (evitan conflictos 409 en ejecuciones repetidas)",
+          "    pm.collectionVariables.set('testSlug', 'site-' + id);",
+          "    pm.collectionVariables.set('testPageSlug', 'page-' + id);",
+          "    pm.collectionVariables.set('testCategorySlug', 'cat-' + id);",
+          "    pm.collectionVariables.set('testPostSlug', 'post-' + id);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 · Auth",
+      "description": "Registro, inicio de sesión y gestión de sesiones y perfil",
+      "item": [
+        {
+          "name": "01. Registrar usuario",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"SigmaBuilder\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: user tiene id', function () {",
+                  "    const entity = pm.response.json().data.user;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: usuario tiene email correcto', function () {",
+                  "",
+                  "    const user = pm.response.json().data.user;",
+                  "",
+                  "    pm.expect(user.email).to.eql(pm.collectionVariables.get('testEmail'));",
+                  "",
+                  "    pm.expect(user).to.have.property('first_name', 'Test');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.user;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('user_id', _entity.id);",
+                  "}",
+                  "",
+                  "// Guardar el token JWT de acceso",
+                  "const _regRes = pm.response.json();",
+                  "if (_regRes.data && _regRes.data.accessToken) {",
+                  "    pm.collectionVariables.set('token', _regRes.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02. Registrar usuario — Email duplicado [ERROR 409]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"Duplicado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03. Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: user tiene id', function () {",
+                  "    const entity = pm.response.json().data.user;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: login devuelve token de acceso', function () {",
+                  "",
+                  "    const res = pm.response.json();",
+                  "",
+                  "    pm.expect(res.data).to.have.property('accessToken');",
+                  "",
+                  "    pm.expect(res.data.accessToken).to.be.a('string').and.not.empty;",
+                  "",
+                  "});",
+                  "",
+                  "",
+                  "// Actualizar el token con el nuevo access token de login",
+                  "const _loginRes = pm.response.json();",
+                  "if (_loginRes.data && _loginRes.data.accessToken) {",
+                  "    pm.collectionVariables.set('token', _loginRes.data.accessToken);",
+                  "}",
+                  "if (_loginRes.data && _loginRes.data.user && _loginRes.data.user.id) {",
+                  "    pm.collectionVariables.set('user_id', _loginRes.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04. Iniciar sesión — Contraseña incorrecta [ERROR 401]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"contraseña-incorrecta-xyz\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05. Obtener mi perfil (GET /me)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test('Datos: el perfil devuelve el email correcto', function () {",
+                  "",
+                  "    const user = pm.response.json().data.user;",
+                  "",
+                  "    pm.expect(user).to.be.an('object');",
+                  "",
+                  "    pm.expect(user.email).to.eql(pm.collectionVariables.get('testEmail'));",
+                  "",
+                  "    pm.expect(user).to.have.property('id');",
+                  "",
+                  "    pm.expect(user).to.have.property('first_name');",
+                  "",
+                  "    pm.expect(user).to.have.property('last_name');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06. Actualizar perfil",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/auth/me/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                "profile"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test('Datos: nombre actualizado correctamente', function () {",
+                  "",
+                  "    const user = pm.response.json().data.user;",
+                  "",
+                  "    pm.expect(user).to.have.property('first_name', 'Updated');",
+                  "",
+                  "    pm.expect(user).to.have.property('last_name', 'Name');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07. Obtener sesiones activas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "sessions"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que se devuelve un array de sesiones",
+                  "pm.test('Datos: array de sesiones', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data.sessions).to.be.an('array');",
+                  "    pm.expect(res.data.sessions.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "// Guardar el ID de la primera sesión para poder eliminarla en el Teardown",
+                  "const _sessions = pm.response.json().data.sessions;",
+                  "if (_sessions && _sessions.length > 0) {",
+                  "    pm.collectionVariables.set('session_id', _sessions[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08. Solicitar restablecimiento de contraseña",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test('Datos: mensaje de confirmación', function () {",
+                  "",
+                  "    const res = pm.response.json();",
+                  "",
+                  "    pm.expect(res.data).to.have.property('message');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09. Restablecer contraseña — Token inválido [ERROR 400]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"token-invalido-para-test-xyz-12345\",\n  \"newPassword\": \"NuevaContraseña123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 400 Bad Request - Token inválido', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 · Proyectos",
+      "description": "Creación y gestión de proyectos",
+      "item": [
+        {
+          "name": "10. Crear proyecto",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mi Proyecto Test\",\n  \"description\": \"Proyecto creado por los tests automatizados\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: project tiene id', function () {",
+                  "    const entity = pm.response.json().data.project;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: proyecto tiene nombre correcto', function () {",
+                  "",
+                  "    const project = pm.response.json().data.project;",
+                  "",
+                  "    pm.expect(project.name).to.eql('Mi Proyecto Test');",
+                  "",
+                  "    pm.expect(project).to.have.property('api_key');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.project;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('project_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11. Crear proyecto — Sin nombre [ERROR 422]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Proyecto sin nombre\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 422 Unprocessable Entity - Validación', function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12. Listar proyectos del usuario",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que se devuelve un array con al menos un proyecto",
+                  "pm.test('Datos: array de proyectos con al menos uno', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data.projects).to.be.an('array');",
+                  "    pm.expect(res.data.projects.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13. Obtener proyecto por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: project tiene id', function () {",
+                  "    const entity = pm.response.json().data.project;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: el ID del proyecto coincide', function () {",
+                  "",
+                  "    const project = pm.response.json().data.project;",
+                  "",
+                  "    pm.expect(project.id).to.eql(pm.collectionVariables.get('project_id'));",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14. Actualizar nombre del proyecto",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Proyecto Test Actualizado\",\n  \"description\": \"Descripción actualizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: project tiene id', function () {",
+                  "    const entity = pm.response.json().data.project;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: nombre actualizado correctamente', function () {",
+                  "",
+                  "    const project = pm.response.json().data.project;",
+                  "",
+                  "    pm.expect(project.name).to.eql('Proyecto Test Actualizado');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 · Roles y Permisos",
+      "description": "Gestión de roles y sus permisos dentro del proyecto",
+      "item": [
+        {
+          "name": "15. Obtener permisos disponibles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles",
+                "permissions"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que se devuelve un array de permisos",
+                  "pm.test('Datos: array de permisos disponibles', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.data.permissions).to.be.an('array');",
+                  "    pm.expect(res.data.permissions.length).to.be.greaterThan(0);",
+                  "    pm.expect(res.data.permissions[0]).to.have.property('id');",
+                  "    pm.expect(res.data.permissions[0]).to.have.property('action');",
+                  "});",
+                  "",
+                  "// Guardar el ID del primer permiso para usarlo en tests de asignación de permisos",
+                  "const _perms = pm.response.json().data.permissions;",
+                  "if (_perms && _perms.length > 0) {",
+                  "    pm.collectionVariables.set('permission_id', _perms[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16. Listar roles del proyecto",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que existen los roles por defecto",
+                  "pm.test('Datos: roles por defecto creados automáticamente', function () {",
+                  "    const roles = pm.response.json().data.roles;",
+                  "    pm.expect(roles).to.be.an('array');",
+                  "    const names = roles.map(r => r.name);",
+                  "    pm.expect(names).to.include('Owner');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17. Crear rol personalizado",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Editor\",\n  \"description\": \"Puede editar contenido del sitio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: role tiene id', function () {",
+                  "    const entity = pm.response.json().data.role;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: rol tiene nombre correcto', function () {",
+                  "",
+                  "    const role = pm.response.json().data.role;",
+                  "",
+                  "    pm.expect(role.name).to.eql('Editor');",
+                  "",
+                  "    pm.expect(role).to.have.property('permissions');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.role;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('role_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18. Crear rol — Nombre duplicado [ERROR 409]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Editor\",\n  \"description\": \"Intentando duplicar\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 409 Conflict - Nombre de rol duplicado', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "19. Obtener rol por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: role tiene id', function () {",
+                  "    const entity = pm.response.json().data.role;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: el ID del rol coincide', function () {",
+                  "",
+                  "    const role = pm.response.json().data.role;",
+                  "",
+                  "    pm.expect(role.id).to.eql(pm.collectionVariables.get('role_id'));",
+                  "",
+                  "    pm.expect(role).to.have.property('permissions');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "20. Actualizar nombre del rol",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Editor Senior\",\n  \"description\": \"Editor con más privilegios\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: role tiene id', function () {",
+                  "    const entity = pm.response.json().data.role;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: nombre del rol actualizado', function () {",
+                  "",
+                  "    const role = pm.response.json().data.role;",
+                  "",
+                  "    pm.expect(role.name).to.eql('Editor Senior');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "21. Obtener permisos del rol",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles/{{role_id}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles",
+                "{{role_id}}",
+                "permissions"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// El controlador devuelve { data: { permissions: [...] } }",
+                  "// El array puede estar vacío si el rol no tiene permisos asignados aún",
+                  "pm.test('Datos: array de permisos del rol (vacío para rol nuevo)', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data.permissions).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "22. Asignar permisos al rol",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles/{{role_id}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles",
+                "{{role_id}}",
+                "permissions"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [\n    \"{{permission_id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: role tiene id', function () {",
+                  "    const entity = pm.response.json().data.role;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: rol tiene permisos asignados', function () {",
+                  "",
+                  "    const role = pm.response.json().data.role;",
+                  "",
+                  "    pm.expect(role.permissions).to.be.an('array');",
+                  "",
+                  "    pm.expect(role.permissions.length).to.be.greaterThan(0);",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 · Miembros e Invitaciones",
+      "description": "Gestión de miembros del proyecto e invitaciones por email",
+      "item": [
+        {
+          "name": "23. Listar miembros del proyecto",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/members",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "members"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que el creador aparece como Owner",
+                  "pm.test('Datos: el creador aparece como miembro Owner', function () {",
+                  "    const members = pm.response.json().data.members;",
+                  "    pm.expect(members).to.be.an('array');",
+                  "    pm.expect(members.length).to.be.greaterThan(0);",
+                  "    const ownerMember = members.find(m => m.role && m.role.name === 'Owner');",
+                  "    pm.expect(ownerMember).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "24. Invitar miembro por email",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/members/invite",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "members",
+                "invite"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{inviteEmail}}\",\n  \"roleId\": \"{{role_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Generar un email único para la invitación",
+                  "const runId = pm.collectionVariables.get('run_id');",
+                  "pm.collectionVariables.set('inviteEmail', 'invited_' + runId + '@example.com');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura de la respuesta",
+                  "pm.test('Respuesta: invitación enviada con token', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data).to.have.property('message');",
+                  "    pm.expect(res.data).to.have.property('token');",
+                  "    pm.expect(res.data.token).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "// Guardar el token de invitación para los siguientes tests",
+                  "const _inviteData = pm.response.json().data;",
+                  "if (_inviteData && _inviteData.token) {",
+                  "    pm.collectionVariables.set('invite_token', _inviteData.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "25. Invitar miembro — Email duplicado [ERROR 409]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/members/invite",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "members",
+                "invite"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{inviteEmail}}\",\n  \"roleId\": \"{{role_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 409 Conflict - Invitación pendiente ya existe', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "26. Obtener información de la invitación",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/invitations/{{invite_token}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invitations",
+                "{{invite_token}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test('Datos: información de la invitación correcta', function () {",
+                  "",
+                  "    const invitation = pm.response.json().data.invitation;",
+                  "",
+                  "    pm.expect(invitation).to.be.an('object');",
+                  "",
+                  "    pm.expect(invitation).to.have.property('email');",
+                  "",
+                  "    pm.expect(invitation).to.have.property('projectName');",
+                  "",
+                  "    pm.expect(invitation).to.have.property('roleName');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 · Media",
+      "description": "Gestión de carpetas de media del proyecto (sin subida de archivos que requieren S3)",
+      "item": [
+        {
+          "name": "27. Crear carpeta de media",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/media/folders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "media",
+                "folders"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Imágenes del Proyecto\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// La ruta de media usa res.json() directamente (sin wrapper success/data)",
+                  "pm.test('Datos: carpeta creada con id y nombre', function () {",
+                  "    const folder = pm.response.json();",
+                  "    pm.expect(folder).to.have.property('id');",
+                  "    pm.expect(folder).to.have.property('name', 'Imágenes del Proyecto');",
+                  "});",
+                  "",
+                  "// Guardar el ID de la carpeta",
+                  "const _folder = pm.response.json();",
+                  "if (_folder && _folder.id) {",
+                  "    pm.collectionVariables.set('folder_id', _folder.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "28. Listar carpetas de media",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/media/folders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "media",
+                "folders"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// La ruta de media usa res.json() directamente — devuelve un array",
+                  "pm.test('Datos: array de carpetas', function () {",
+                  "    const folders = pm.response.json();",
+                  "    pm.expect(folders).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "29. Actualizar nombre de carpeta",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/media/folders/{{folder_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "media",
+                "folders",
+                "{{folder_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Imágenes Actualizadas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que el nombre se actualizó",
+                  "pm.test('Datos: nombre de carpeta actualizado', function () {",
+                  "    const folder = pm.response.json();",
+                  "    pm.expect(folder).to.have.property('name', 'Imágenes Actualizadas');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 · Sitios Web",
+      "description": "Creación y gestión de sitios web dentro del proyecto",
+      "item": [
+        {
+          "name": "30. Crear sitio web",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/sites",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "sites"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"{{testSlug}}\",\n  \"name\": \"Mi Sitio Test\",\n  \"templateType\": \"blank\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: site tiene id', function () {",
+                  "    const entity = pm.response.json().data.site;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: sitio tiene slug dinámico correcto', function () {",
+                  "",
+                  "    const site = pm.response.json().data.site;",
+                  "",
+                  "    pm.expect(site.slug).to.eql(pm.collectionVariables.get('testSlug'));",
+                  "",
+                  "    pm.expect(site).to.have.property('status', 'draft');",
+                  "",
+                  "    pm.expect(site).to.have.property('features');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.site;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('site_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "31. Crear sitio — Slug duplicado [ERROR 409]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/sites",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "sites"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"{{testSlug}}\",\n  \"name\": \"Sitio Duplicado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 409 Conflict - Slug ya en uso', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "32. Listar sitios del proyecto",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/sites",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "sites"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que existe al menos el sitio recién creado",
+                  "pm.test('Datos: array de sitios con al menos uno', function () {",
+                  "    const sites = pm.response.json().data.sites;",
+                  "    pm.expect(sites).to.be.an('array');",
+                  "    pm.expect(sites.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "33. Obtener sitio por slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/slug/{{testSlug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "slug",
+                "{{testSlug}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: site tiene id', function () {",
+                  "    const entity = pm.response.json().data.site;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: slug del sitio coincide', function () {",
+                  "",
+                  "    const site = pm.response.json().data.site;",
+                  "",
+                  "    pm.expect(site.slug).to.eql(pm.collectionVariables.get('testSlug'));",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "34. Obtener sitio por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: site tiene id', function () {",
+                  "    const entity = pm.response.json().data.site;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: ID del sitio coincide', function () {",
+                  "",
+                  "    const site = pm.response.json().data.site;",
+                  "",
+                  "    pm.expect(site.id).to.eql(pm.collectionVariables.get('site_id'));",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "35. Actualizar sitio — Activar módulos Blog y Portfolio",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mi Sitio Test Actualizado\",\n  \"features\": {\n    \"modules\": {\n      \"blog\": true,\n      \"portfolio\": true\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: site tiene id', function () {",
+                  "    const entity = pm.response.json().data.site;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: módulos activados correctamente', function () {",
+                  "",
+                  "    const site = pm.response.json().data.site;",
+                  "",
+                  "    pm.expect(site.features).to.be.an('object');",
+                  "",
+                  "    pm.expect(site.features.modules).to.have.property('blog', true);",
+                  "",
+                  "    pm.expect(site.features.modules).to.have.property('portfolio', true);",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 · Páginas",
+      "description": "Gestión de páginas del sitio web",
+      "item": [
+        {
+          "name": "36. Crear página",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/pages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "pages"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"{{testPageSlug}}\",\n  \"title\": \"Página Principal\",\n  \"html\": \"<h1>Bienvenido a mi sitio</h1><p>Esta es la página de inicio.</p>\",\n  \"css\": \"h1 { color: #333; }\",\n  \"status\": \"published\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Pages usa { success, data } directamente",
+                  "pm.test('Datos: página creada con slug correcto', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data).to.be.an('object');",
+                  "    pm.expect(res.data).to.have.property('id');",
+                  "    pm.expect(res.data.slug).to.eql(pm.collectionVariables.get('testPageSlug'));",
+                  "    pm.expect(res.data).to.have.property('is_home'); // Primera página → home automático",
+                  "});",
+                  "",
+                  "// Guardar el ID de la página",
+                  "const _page = pm.response.json().data;",
+                  "if (_page && _page.id) {",
+                  "    pm.collectionVariables.set('page_id', _page.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "37. Crear página — Slug duplicado [ERROR 409]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/pages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "pages"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"{{testPageSlug}}\",\n  \"title\": \"Página Duplicada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Las páginas devuelven error de conflicto sin wrapper",
+                  "pm.test('Estado: 409 Conflict', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "38. Listar páginas del sitio",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/pages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "pages"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Pages devuelve paginación en data.data",
+                  "pm.test('Datos: respuesta paginada con páginas', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data).to.have.property('data');",
+                  "    pm.expect(res.data.data).to.be.an('array');",
+                  "    pm.expect(res.data).to.have.property('meta');",
+                  "    pm.expect(res.data.meta).to.have.property('total');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "39. Obtener página por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/pages/{{page_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "pages",
+                "{{page_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar datos de la página",
+                  "pm.test('Datos: página con ID correcto', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data.id).to.eql(pm.collectionVariables.get('page_id'));",
+                  "    pm.expect(res.data).to.have.property('title', 'Página Principal');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "40. Actualizar página",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/pages/{{page_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "pages",
+                "{{page_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Página Principal Actualizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar que el título se actualizó",
+                  "pm.test('Datos: título de página actualizado', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data.title).to.eql('Página Principal Actualizada');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 · Blog",
+      "description": "Gestión de categorías y posts del blog del sitio",
+      "item": [
+        {
+          "name": "41. Crear categoría de blog",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "categories"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tecnología\",\n  \"slug\": \"{{testCategorySlug}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: blogCategory tiene id', function () {",
+                  "    const entity = pm.response.json().data.blogCategory;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: categoría tiene slug dinámico', function () {",
+                  "",
+                  "    const cat = pm.response.json().data.blogCategory;",
+                  "",
+                  "    pm.expect(cat.slug).to.eql(pm.collectionVariables.get('testCategorySlug'));",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.blogCategory;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('category_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "42. Crear categoría — Slug duplicado [ERROR 409]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "categories"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tecnología Duplicada\",\n  \"slug\": \"{{testCategorySlug}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 409 Conflict - Slug de categoría duplicado', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "43. Listar categorías del blog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "categories"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar el array de categorías",
+                  "pm.test('Datos: array de categorías del blog', function () {",
+                  "    const cats = pm.response.json().data.blogCategories;",
+                  "    pm.expect(cats).to.be.an('array');",
+                  "    pm.expect(cats.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "44. Obtener categoría por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: blogCategory tiene id', function () {",
+                  "    const entity = pm.response.json().data.blogCategory;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: ID de categoría coincide', function () {",
+                  "",
+                  "    const cat = pm.response.json().data.blogCategory;",
+                  "",
+                  "    pm.expect(cat.id).to.eql(pm.collectionVariables.get('category_id'));",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "45. Actualizar categoría",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tecnología e Innovación\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: blogCategory tiene id', function () {",
+                  "    const entity = pm.response.json().data.blogCategory;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: nombre de categoría actualizado', function () {",
+                  "",
+                  "    const cat = pm.response.json().data.blogCategory;",
+                  "",
+                  "    pm.expect(cat.name).to.eql('Tecnología e Innovación');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "46. Crear post de blog",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "posts"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mi Primer Post\",\n  \"slug\": \"{{testPostSlug}}\",\n  \"content\": \"Este es el contenido completo del primer post de prueba del blog.\",\n  \"excerpt\": \"Resumen del primer post.\",\n  \"category_id\": \"{{category_id}}\",\n  \"status\": \"published\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: blogPost tiene id', function () {",
+                  "    const entity = pm.response.json().data.blogPost;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: post tiene slug dinámico y status publicado', function () {",
+                  "",
+                  "    const post = pm.response.json().data.blogPost;",
+                  "",
+                  "    pm.expect(post.slug).to.eql(pm.collectionVariables.get('testPostSlug'));",
+                  "",
+                  "    pm.expect(post.status).to.eql('published');",
+                  "",
+                  "    pm.expect(post).to.have.property('author_id');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.blogPost;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('post_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "47. Crear post — Slug duplicado [ERROR 409]",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "posts"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Post Duplicado\",\n  \"slug\": \"{{testPostSlug}}\",\n  \"content\": \"Contenido del post duplicado.\",\n  \"status\": \"draft\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el servidor rechaza la petición con el error correcto",
+                  "pm.test('Estado: 409 Conflict - Slug de post duplicado', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta con success false y mensaje', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.expect(res.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "48. Listar posts del blog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "posts"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar el array de posts",
+                  "pm.test('Datos: array de posts del blog', function () {",
+                  "    const posts = pm.response.json().data.blogPosts;",
+                  "    pm.expect(posts).to.be.an('array');",
+                  "    pm.expect(posts.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "49. Obtener post por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: blogPost tiene id', function () {",
+                  "    const entity = pm.response.json().data.blogPost;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: ID del post coincide', function () {",
+                  "",
+                  "    const post = pm.response.json().data.blogPost;",
+                  "",
+                  "    pm.expect(post.id).to.eql(pm.collectionVariables.get('post_id'));",
+                  "",
+                  "    pm.expect(post).to.have.property('title');",
+                  "",
+                  "    pm.expect(post).to.have.property('content');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "50. Actualizar post",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mi Primer Post Actualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: blogPost tiene id', function () {",
+                  "    const entity = pm.response.json().data.blogPost;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: título del post actualizado', function () {",
+                  "",
+                  "    const post = pm.response.json().data.blogPost;",
+                  "",
+                  "    pm.expect(post.title).to.eql('Mi Primer Post Actualizado');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 · Portfolio",
+      "description": "Gestión de secciones, ítems y stack tecnológico del portfolio",
+      "item": [
+        {
+          "name": "51. Crear sección de portfolio",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/sections",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "sections"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sobre Mí\",\n  \"sort_order\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioSection tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioSection;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: sección tiene título correcto', function () {",
+                  "",
+                  "    const section = pm.response.json().data.portfolioSection;",
+                  "",
+                  "    pm.expect(section.title).to.eql('Sobre Mí');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.portfolioSection;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('section_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "52. Listar secciones del portfolio",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/sections",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "sections"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Secciones devuelven respuesta paginada",
+                  "pm.test('Datos: respuesta paginada de secciones', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data).to.have.property('data');",
+                  "    pm.expect(res.data.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "53. Obtener sección por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/sections/{{section_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "sections",
+                "{{section_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioSection tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioSection;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: ID de sección coincide', function () {",
+                  "",
+                  "    const section = pm.response.json().data.portfolioSection;",
+                  "",
+                  "    pm.expect(section.id).to.eql(pm.collectionVariables.get('section_id'));",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "54. Actualizar sección de portfolio",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/sections/{{section_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "sections",
+                "{{section_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sobre Mí Actualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioSection tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioSection;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: título de sección actualizado', function () {",
+                  "",
+                  "    const section = pm.response.json().data.portfolioSection;",
+                  "",
+                  "    pm.expect(section.title).to.eql('Sobre Mí Actualizado');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "55. Crear ítem de portfolio",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "items"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mi Proyecto Open Source\",\n  \"description\": \"Una librería increíble que construí.\",\n  \"live_url\": \"https://example.com\",\n  \"repository_url\": \"https://github.com/example/repo\",\n  \"sort_order\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioItem tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioItem;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: ítem tiene título correcto', function () {",
+                  "",
+                  "    const item = pm.response.json().data.portfolioItem;",
+                  "",
+                  "    pm.expect(item.title).to.eql('Mi Proyecto Open Source');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.portfolioItem;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('item_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "56. Listar ítems del portfolio",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "items"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar el array de ítems",
+                  "pm.test('Datos: array de ítems del portfolio', function () {",
+                  "    const items = pm.response.json().data.portfolioItems;",
+                  "    pm.expect(items).to.be.an('array');",
+                  "    pm.expect(items.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "57. Obtener ítem por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/items/{{item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "items",
+                "{{item_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioItem tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioItem;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: ID del ítem coincide', function () {",
+                  "",
+                  "    const item = pm.response.json().data.portfolioItem;",
+                  "",
+                  "    pm.expect(item.id).to.eql(pm.collectionVariables.get('item_id'));",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "58. Actualizar ítem de portfolio",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/items/{{item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "items",
+                "{{item_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mi Proyecto Open Source Actualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioItem tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioItem;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: título del ítem actualizado', function () {",
+                  "",
+                  "    const item = pm.response.json().data.portfolioItem;",
+                  "",
+                  "    pm.expect(item.title).to.eql('Mi Proyecto Open Source Actualizado');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "59. Crear tecnología del stack",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/stack",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "stack"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Node.js\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioStack tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioStack;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: tecnología tiene nombre correcto', function () {",
+                  "",
+                  "    const stack = pm.response.json().data.portfolioStack;",
+                  "",
+                  "    pm.expect(stack.name).to.eql('Node.js');",
+                  "",
+                  "});",
+                  "",
+                  "// Guardar el ID en la variable de colección para usarlo en peticiones posteriores",
+                  "const _entity = pm.response.json().data.portfolioStack;",
+                  "if (_entity && _entity.id) {",
+                  "    pm.collectionVariables.set('stack_id', _entity.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "60. Listar stack tecnológico",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/stack",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "stack"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Stack devuelve respuesta paginada",
+                  "pm.test('Datos: respuesta paginada del stack', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "    pm.expect(res.data.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "61. Obtener tecnología del stack por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/stack/{{stack_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "stack",
+                "{{stack_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioStack tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioStack;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: ID del stack coincide', function () {",
+                  "",
+                  "    const stack = pm.response.json().data.portfolioStack;",
+                  "",
+                  "    pm.expect(stack.id).to.eql(pm.collectionVariables.get('stack_id'));",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "62. Actualizar tecnología del stack",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/stack/{{stack_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "stack",
+                "{{stack_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Node.js v22 LTS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: portfolioStack tiene id', function () {",
+                  "    const entity = pm.response.json().data.portfolioStack;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: nombre del stack actualizado', function () {",
+                  "",
+                  "    const stack = pm.response.json().data.portfolioStack;",
+                  "",
+                  "    pm.expect(stack.name).to.eql('Node.js v22 LTS');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 · API Pública",
+      "description": "Endpoints públicos (sin autenticación) — el sitio debe estar publicado",
+      "item": [
+        {
+          "name": "63. Publicar sitio web",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/publish",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "publish"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: site tiene id', function () {",
+                  "    const entity = pm.response.json().data.site;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: sitio publicado con status public', function () {",
+                  "",
+                  "    const site = pm.response.json().data.site;",
+                  "",
+                  "    pm.expect(site.status).to.eql('public');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "64. [Público] Información del sitio",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/{{testSlug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "{{testSlug}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Endpoint público devuelve { site } directamente (sin wrapper success/data)",
+                  "pm.test('Datos: objeto site con campos básicos', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('site');",
+                  "    pm.expect(res.site).to.have.property('id');",
+                  "    pm.expect(res.site.slug).to.eql(pm.collectionVariables.get('testSlug'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "65. [Público] Renderizar página home",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/{{testSlug}}/render",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "{{testSlug}}",
+                "render"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// El render devuelve { success: true, data: page }",
+                  "pm.test('Datos: renderiza la página de inicio', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res.data).to.be.an('object');",
+                  "    pm.expect(res.data).to.have.property('id');",
+                  "    pm.expect(res.data).to.have.property('is_home', true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "66. [Público] Renderizar página por slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/{{testSlug}}/render/{{testPageSlug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "{{testSlug}}",
+                "render",
+                "{{testPageSlug}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// El render por slug devuelve { success: true, data: page }",
+                  "pm.test('Datos: página renderizada por slug', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res.data).to.have.property('slug');",
+                  "    pm.expect(res.data.slug).to.eql(pm.collectionVariables.get('testPageSlug'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "67. [Público] Categorías del blog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/{{testSlug}}/modules/blog/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "{{testSlug}}",
+                "modules",
+                "blog",
+                "categories"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Blog público devuelve { categories: [...] } sin wrapper success",
+                  "pm.test('Datos: array de categorías públicas', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('categories');",
+                  "    pm.expect(res.categories).to.be.an('array');",
+                  "    pm.expect(res.categories.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "68. [Público] Posts del blog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/{{testSlug}}/modules/blog/posts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "{{testSlug}}",
+                "modules",
+                "blog",
+                "posts"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Blog público devuelve { posts, total } sin wrapper success",
+                  "pm.test('Datos: posts publicados del blog', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('posts');",
+                  "    pm.expect(res.posts).to.be.an('array');",
+                  "    pm.expect(res.posts.length).to.be.greaterThan(0);",
+                  "    pm.expect(res).to.have.property('total');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "69. [Público] Post por slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/{{testSlug}}/modules/blog/posts/{{testPostSlug}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "{{testSlug}}",
+                "modules",
+                "blog",
+                "posts",
+                "{{testPostSlug}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Blog público devuelve { post } sin wrapper success",
+                  "pm.test('Datos: post por slug correcto', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('post');",
+                  "    pm.expect(res.post.slug).to.eql(pm.collectionVariables.get('testPostSlug'));",
+                  "    pm.expect(res.post.status).to.eql('published');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "70. [Público] Portfolio completo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/{{testSlug}}/modules/portfolio/items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "{{testSlug}}",
+                "modules",
+                "portfolio",
+                "items"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Portfolio público devuelve { portfolio: { sections, items, stack } } sin wrapper",
+                  "pm.test('Datos: portfolio con secciones, ítems y stack', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('portfolio');",
+                  "    pm.expect(res.portfolio).to.have.property('sections');",
+                  "    pm.expect(res.portfolio).to.have.property('items');",
+                  "    pm.expect(res.portfolio).to.have.property('stack');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "71. [Público] Sitio inexistente [ERROR 404]",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/public/sites/slug-que-no-existe-xyz123",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "sites",
+                "slug-que-no-existe-xyz123"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que se devuelve 404 para un sitio que no existe",
+                  "pm.test('Estado: 404 Not Found', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "// Verificar la estructura del error",
+                  "pm.test('Error: respuesta de sitio no encontrado', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', false);",
+                  "    pm.expect(res).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11 · Teardown",
+      "description": "Limpieza en orden inverso de dependencias para dejar la BD limpia",
+      "item": [
+        {
+          "name": "72. Cambiar sitio a borrador",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/draft",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "draft"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Verificar la estructura base de la respuesta",
+                  "pm.test('Respuesta: JSON con success true', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('success', true);",
+                  "    pm.expect(res).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Verificar que la entidad creada/obtenida tiene los campos esperados",
+                  "pm.test('Datos: site tiene id', function () {",
+                  "    const entity = pm.response.json().data.site;",
+                  "    pm.expect(entity).to.be.an('object');",
+                  "    pm.expect(entity).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Datos: sitio vuelto a borrador', function () {",
+                  "",
+                  "    const site = pm.response.json().data.site;",
+                  "",
+                  "    pm.expect(site.status).to.eql('draft');",
+                  "",
+                  "});",
+                  ""
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "73. Eliminar post del blog",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "posts",
+                "{{post_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "74. Eliminar categoría del blog",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/blog/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "blog",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "75. Eliminar ítem del portfolio",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/items/{{item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "items",
+                "{{item_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "76. Eliminar sección del portfolio",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/sections/{{section_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "sections",
+                "{{section_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "77. Eliminar tecnología del stack",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/modules/portfolio/stack/{{stack_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "modules",
+                "portfolio",
+                "stack",
+                "{{stack_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "78. Eliminar página",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}/pages/{{page_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}",
+                "pages",
+                "{{page_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// NOTA: Si la página es la home y la única, la eliminación puede dar 400.",
+                  "// En este flujo es la única página, así que el servidor puede rechazarlo.",
+                  "// Verificamos que la respuesta es 204 o 400 (ambas son comportamientos válidos).",
+                  "pm.test('Estado: 204 No Content o 400 (si es la única home)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([204, 400]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "79. Eliminar sitio web",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/sites/{{site_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sites",
+                "{{site_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "80. Eliminar carpeta de media",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/media/folders/{{folder_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "media",
+                "folders",
+                "{{folder_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar el código de estado",
+                  "pm.test('Estado: 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "81. Eliminar rol personalizado",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}/roles/{{role_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}",
+                "roles",
+                "{{role_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "82. Eliminar proyecto",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/projects/{{project_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "projects",
+                "{{project_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "83. Eliminar sesión activa",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/auth/sessions/{{session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "sessions",
+                "{{session_id}}"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que la sesión fue eliminada",
+                  "pm.test('Estado: 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Datos: mensaje de confirmación de cierre de sesión', function () {",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.success).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "84. Cerrar sesión (logout)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verificar que el código de estado es el esperado",
+                  "pm.test('Estado: 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// 204 No Content: no se espera cuerpo en la respuesta",
+                  "pm.test('Respuesta: sin cuerpo (204 No Content)', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
