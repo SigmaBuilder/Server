@@ -5,7 +5,8 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "newman": "newman run SigmaBuilder_API.postman_collection.json -r cli"
   },
   "repository": {
     "type": "git",
@@ -37,6 +38,7 @@
     "uuid": "^14.0.0"
   },
   "devDependencies": {
+    "newman": "^6.2.2",
     "nodemon": "^3.1.14"
   }
 }
