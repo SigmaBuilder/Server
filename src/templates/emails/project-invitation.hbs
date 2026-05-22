@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Invitación a Proyecto</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f4f4f5;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .header {
+      background-color: #09090b;
+      padding: 24px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 32px 24px;
+      color: #3f3f46;
+      line-height: 1.6;
+    }
+    .content p {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+    }
+    .invite-box {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 24px;
+      margin: 24px 0;
+      text-align: center;
+    }
+    .project-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .btn-container {
+      text-align: center;
+      margin: 32px 0;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #2563eb;
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .footer {
+      background-color: #fafafa;
+      padding: 24px;
+      text-align: center;
+      color: #a1a1aa;
+      font-size: 14px;
+      border-top: 1px solid #f4f4f5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SigmaBuilder</h1>
+    </div>
+    <div class="content">
+      <p>Hola,</p>
+      <p><strong>{{inviterName}}</strong> te ha invitado a unirte a un proyecto en SigmaBuilder.</p>
+      
+      <div class="invite-box">
+        <div class="project-name">{{projectName}}</div>
+        <p style="margin: 0; color: #64748b;">Rol asignado: {{roleName}}</p>
+      </div>
+
+      <p>Para ver los detalles y aceptar la invitación, haz clic en el siguiente botón:</p>
+      
+      <div class="btn-container">
+        <a href="{{inviteUrl}}" class="btn">Ver Invitación</a>
+      </div>
+      
+      <p>Si no esperabas esta invitación, puedes ignorar este correo.</p>
+    </div>
+    <div class="footer">
+      <p>© {{year}} SigmaBuilder. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</body>
+</html>
