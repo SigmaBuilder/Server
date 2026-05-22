@@ -139,9 +139,8 @@ const publicDocs = {
     ],
   },
   blog: {
-    name: "Blog",
-    description:
-      "Endpoints del módulo de Blog para consultar categorías y publicaciones.",
+    name: 'Blog',
+    description: 'Endpoints del módulo de Blog para consultar categorías y publicaciones. IMPORTANTE: El campo "content" de los posts devuelve un objeto JSON generado por el editor TipTap (basado en ProseMirror), NO un string HTML. Ej: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hola"}]}]}. Debes crear funciones para renderizar este JSON a HTML en el frontend.',
     endpoints: [
       {
         name: "Listar Categorías",
@@ -192,7 +191,15 @@ const publicDocs = {
               slug: "mi-primer-post",
               excerpt: "Un breve resumen...",
               cover_image: "https://ejemplo.com/imagen.jpg",
-              content: "<p>Contenido completo...</p>",
+              content: {
+                type: "doc",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Contenido del post en formato TipTap JSON..." }]
+                  }
+                ]
+              },
               status: "published",
               created_at: "2025-01-01T00:00:00.000Z",
               updated_at: "2025-01-01T00:00:00.000Z",
@@ -224,7 +231,15 @@ const publicDocs = {
             slug: "mi-primer-post",
             excerpt: "Un breve resumen...",
             cover_image: "https://ejemplo.com/imagen.jpg",
-            content: "<p>Contenido completo...</p>",
+            content: {
+              type: "doc",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "Contenido del post en formato TipTap JSON (ProseMirror)..." }]
+                }
+              ]
+            },
             status: "published",
             created_at: "2025-01-01T00:00:00.000Z",
             updated_at: "2025-01-01T00:00:00.000Z",

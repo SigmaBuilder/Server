@@ -27,6 +27,7 @@ const portfolioStackRouter = require('./modules/portfolio/stack/stack.routes');
 const blogCategoriesRouter = require('./modules/blog/categories/categories.routes');
 const blogPostsRouter = require('./modules/blog/posts/posts.routes');
 const pagesRouter = require('./modules/pages/pages.routes');
+const aiRouter = require('./ai/ai.routes');
 
 // Obtener sitio por slug globalmente usando el context resolver
 router.get('/slug/:slug', resolveSiteContext, authorize("project:read"), controller.getSiteBySlug);
@@ -56,5 +57,6 @@ router.use('/:siteId/modules/portfolio/stack', resolveSiteContext, portfolioStac
 router.use('/:siteId/modules/blog/categories', resolveSiteContext, blogCategoriesRouter);
 router.use('/:siteId/modules/blog/posts', resolveSiteContext, blogPostsRouter);
 router.use('/:siteId/pages', resolveSiteContext, pagesRouter);
+router.use('/:siteId/ai', resolveSiteContext, aiRouter);
 
 module.exports = router;
