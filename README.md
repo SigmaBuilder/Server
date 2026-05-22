@@ -125,7 +125,7 @@ El código fuente sigue un patrón modular en `src`:
 
 ```text
 Server/
-├── db/                     # Scripts de DB (schema y seeds)
+├── db/                     # Scripts de DB (schema, seeds y queries)
 ├── src/
 │   ├── api/
 │   │   └── v1/              # Versión 1 de la API REST
