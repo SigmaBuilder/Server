@@ -438,22 +438,23 @@ CRITICAL RULES:
               publicApiRoutes: {}
             };
             
+            const docsObj = publicDocs('es'); // AI always sees docs in ES (or EN, doesn't matter much)
             // Mapeamos los endpoints simplificados
             context.publicApiRoutes.core = {
               base: `${backendOrigin}/api/v1/public/sites/${site.slug}`,
-              routes: publicDocs.core.endpoints.map(ep => ({ method: ep.method, path: `${backendOrigin}${ep.path.replace('{slug}', site.slug)}`, returns: ep.returns }))
+              routes: docsObj.core.endpoints.map(ep => ({ method: ep.method, path: `${backendOrigin}${ep.path.replace('{slug}', site.slug)}`, returns: ep.returns }))
             };
             
-            if (activeModules.blog && publicDocs.blog) {
+            if (activeModules.blog && docsObj.blog) {
                 context.publicApiRoutes.blog = {
                     base: `${backendOrigin}/api/v1/public/sites/${site.slug}/modules/blog`,
-                    routes: publicDocs.blog.endpoints.map(ep => ({ method: ep.method, path: `${backendOrigin}${ep.path.replace('{slug}', site.slug)}`, returns: ep.returns }))
+                    routes: docsObj.blog.endpoints.map(ep => ({ method: ep.method, path: `${backendOrigin}${ep.path.replace('{slug}', site.slug)}`, returns: ep.returns }))
                 };
             }
-            if (activeModules.portfolio && publicDocs.portfolio) {
+            if (activeModules.portfolio && docsObj.portfolio) {
                 context.publicApiRoutes.portfolio = {
                     base: `${backendOrigin}/api/v1/public/sites/${site.slug}/modules/portfolio`,
-                    routes: publicDocs.portfolio.endpoints.map(ep => ({ method: ep.method, path: `${backendOrigin}${ep.path.replace('{slug}', site.slug)}`, returns: ep.returns }))
+                    routes: docsObj.portfolio.endpoints.map(ep => ({ method: ep.method, path: `${backendOrigin}${ep.path.replace('{slug}', site.slug)}`, returns: ep.returns }))
                 };
             }
             return context;
