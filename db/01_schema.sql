@@ -442,3 +442,38 @@ CREATE OR REPLACE TRIGGER trg_media_assets_updated_at
 CREATE TRIGGER trg_create_default_roles
   AFTER INSERT ON projects
   FOR EACH ROW EXECUTE FUNCTION create_default_project_roles();
+
+-- ─── Procedimientos Almacenados ──────────────────────────────────────────────
+
+-- Procedimiento para limpiar registros caducados y mantener la base de datos ligera.
+CREATE OR REPLACE PROCEDURE sp_mantenimiento_nocturno()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- 1. Eliminar tokens de recuperación de contraseña caducados.
+    DELETE FROM password_reset_tokens 
+    WHERE expires_at < now();
+
+    -- 2. Eliminar invitaciones a proyectos que hayan caducado y sigan pendientes.
+    DELETE FROM project_invitations 
+    WHERE expires_at < now() AND status = 'pending';
+
+    -- 3. Eliminar tokens de refresco que hayan sido revocados (logout).
+    DELETE FROM refresh_tokens 
+    WHERE is_revoked = true;
+
+    COMMIT;
+END;
+$$;
+
+-- ─── Bloque de Ejecución (Test del Procedimiento) ────────────────────────────
+
+DO $$
+BEGIN
+    RAISE NOTICE 'Iniciando rutina de mantenimiento nocturno de SigmaBuilder...';
+    CALL sp_mantenimiento_nocturno();
+    RAISE NOTICE 'Rutina de limpieza ejecutada y confirmada con éxito.';
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 'Fallo en la rutina de mantenimiento: %', SQLERRM;
+END $$;
