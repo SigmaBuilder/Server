@@ -66,20 +66,22 @@ const getPublicPage = async (req, res, next) => {
 const getSiteDocs = (req, res, next) => {
   try {
     const isSimple = req.query.simple === 'true';
+    const lang = req.query.lang || req.headers['accept-language']?.split(',')[0].split('-')[0] || 'es';
     const features = req.site.features || { modules: {} };
     const activeModules = features.modules || {};
     
+    const docsObj = publicDocs(lang);
     const docs = {};
     
     // Core siempre está activo
-    docs.core = processModuleDocs(publicDocs.core, isSimple);
+    docs.core = processModuleDocs(docsObj.core, isSimple);
     
     // Agregar módulos activos
-    if (activeModules.blog && publicDocs.blog) {
-      docs.blog = processModuleDocs(publicDocs.blog, isSimple);
+    if (activeModules.blog && docsObj.blog) {
+      docs.blog = processModuleDocs(docsObj.blog, isSimple);
     }
-    if (activeModules.portfolio && publicDocs.portfolio) {
-      docs.portfolio = processModuleDocs(publicDocs.portfolio, isSimple);
+    if (activeModules.portfolio && docsObj.portfolio) {
+      docs.portfolio = processModuleDocs(docsObj.portfolio, isSimple);
     }
     
     res.json({ success: true, data: docs });
