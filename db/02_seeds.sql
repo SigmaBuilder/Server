@@ -27,6 +27,7 @@ BEGIN
 
     INSERT INTO users (email, password_hash, first_name, last_name)
     VALUES ('demo@sigmabuilder.local', '$2a$10$INVALIDHASHONLYFORTESTINGDOESNOTWORK', 'Demo', 'User')
+    ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
     RETURNING id INTO v_user_id;
 
     INSERT INTO projects (name, description, created_by)

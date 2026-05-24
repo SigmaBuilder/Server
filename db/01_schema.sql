@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS blog_posts CASCADE;
 DROP TABLE IF EXISTS blog_categories CASCADE;
 DROP TABLE IF EXISTS portfolio_stack CASCADE;
 DROP TABLE IF EXISTS portfolio_items CASCADE;
+DROP TABLE IF EXISTS portfolio_sections CASCADE;
 DROP TABLE IF EXISTS pages CASCADE;
 DROP TABLE IF EXISTS sites CASCADE;
 DROP TABLE IF EXISTS project_invitations CASCADE;
@@ -99,6 +100,19 @@ CREATE TABLE IF NOT EXISTS permissions (
   id     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
   action VARCHAR(100) NOT NULL UNIQUE -- Formato: recurso:acción
 );
+
+-- Insert default system permissions
+INSERT INTO permissions (action) VALUES
+  ('project:read'),
+  ('project:update'),
+  ('project:delete'),
+  ('members:read'),
+  ('members:invite'),
+  ('members:update'),
+  ('members:remove'),
+  ('roles:read'),
+  ('roles:manage')
+ON CONFLICT (action) DO NOTHING;
 
 -- role_permissions
 CREATE TABLE IF NOT EXISTS role_permissions (
@@ -461,8 +475,6 @@ BEGIN
     -- 3. Eliminar tokens de refresco que hayan sido revocados (logout).
     DELETE FROM refresh_tokens 
     WHERE is_revoked = true;
-
-    COMMIT;
 END;
 $$;
 
