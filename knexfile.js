@@ -32,7 +32,7 @@ module.exports = {
     ...base,
     connection: {
       ...base.connection,
-      ssl: { rejectUnauthorized: false },
+      ...(process.env.DB_SSL !== 'false' ? { ssl: { rejectUnauthorized: false } } : {}),
     },
     pool: { min: 2, max: 20 },
   },
