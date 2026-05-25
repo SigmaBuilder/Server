@@ -7,6 +7,7 @@ const cheerio = require("cheerio");
 const db = require("../../../../config/db");
 const logger = require("../../../../utils/logger");
 const publicDocs = require("../../public/public.docs");
+const env = require("../../../../config/env");
 
 // Instantiate a custom OpenAI provider instance using environment variables
 // Supports GitHub Models (models.inference.ai.azure.com), Ollama, OpenRouter, etc.
@@ -61,9 +62,9 @@ const chat = async (req, res, next) => {
     }
 
     const modelName = process.env.AI_MODEL || "gpt-4o";
-    const backendUrl = process.env.PUBLIC_URL_API || "http://localhost:3000/api/v1";
+    const backendUrl = env.apiUrl;
     const backendOrigin = backendUrl.replace(/\/api\/v1\/?$/, "");
-    const siteViewerUrl = process.env.SITE_VIEWER_URL || "http://localhost:4000";
+    const siteViewerUrl = env.siteViewerUrl;
 
     logger.info("AI chat request", {
       siteId,

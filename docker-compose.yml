@@ -1,23 +1,53 @@
 services:
-  postgres:
+  # Database Service (PostgreSQL)
+  db:
     image: postgres:17-alpine
     container_name: sigmabuilder_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB:       ${DB_NAME:-sigmabuilder}
-      POSTGRES_USER:     ${DB_USER:-sigma}
+      POSTGRES_DB: ${DB_NAME:-sigmabuilder}
+      POSTGRES_USER: ${DB_USER:-sigma}
       POSTGRES_PASSWORD: ${DB_PASS:-sigma_pass}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
+      # Mount DB initialization scripts (must be copied to the deployment directory on EC2)
       - ./db/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./db/02_seeds.sql:/docker-entrypoint-initdb.d/02_seeds.sql
+      # Persistent PostgreSQL data volume
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sigma} -d ${DB_NAME:-sigmabuilder}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - sigmanet
+
+  # Backend API Service (Node.js/Express)
+  server:
+    profiles:
+      - production
+    image: ghcr.io/sigmabuilder/server:latest
+    container_name: sigmabuilder_server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=5432
+    # Load backend environment secrets (JWT, S3, Resend, etc.)
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sigmanet
 
 volumes:
   postgres_data:
+
+networks:
+  sigmanet:

@@ -45,7 +45,7 @@ const requestPasswordReset = async (email) => {
   });
 
   // Generamos URL para frontend
-  const resetUrl = `${env.cors.origin}/reset-password?token=${token}`;
+  const resetUrl = `${env.clientUrl}/reset-password?token=${token}`;
 
   // Enviamos el correo
   await emailService.sendMail(

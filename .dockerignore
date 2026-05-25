@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.env
+.env.sample
+.git
+.github
+README.md
+LICENSE
+SigmaBuilder_API.postman_collection.json
+test

@@ -55,6 +55,27 @@ const env = {
       ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
       : ["http://localhost:5173"],
   },
+  clientUrl: (() => {
+    let url = process.env.PUBLIC_URL_CLIENT || "http://localhost:5173";
+    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+      url = `http://${url}`;
+    }
+    return url;
+  })(),
+  apiUrl: (() => {
+    let url = process.env.PUBLIC_URL_API || "http://localhost:3000/api/v1";
+    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+      url = `http://${url}`;
+    }
+    return url;
+  })(),
+  siteViewerUrl: (() => {
+    let url = process.env.SITE_VIEWER_URL || "http://localhost:4000";
+    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+      url = `http://${url}`;
+    }
+    return url;
+  })(),
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10),
     max: parseInt(process.env.RATE_LIMIT_MAX || "20", 10),
