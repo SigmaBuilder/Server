@@ -61,8 +61,10 @@ jobs:
           cp docker-compose.yml /home/ubuntu/sigmabuilder/server/
           cp -r db /home/ubuntu/sigmabuilder/server/
           
-          # Write server environment variables to .env on the EC2
-          echo "${{ secrets.SERVER_ENV }}" > /home/ubuntu/sigmabuilder/server/.env
+          # Write server environment variables to .env on the EC2 using a secure heredoc
+          cat << 'EOF' > /home/ubuntu/sigmabuilder/server/.env
+          ${{ secrets.SERVER_ENV }}
+          EOF
           
           # Authenticate Docker daemon on EC2 to GitHub Packages using workflow GITHUB_TOKEN
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
