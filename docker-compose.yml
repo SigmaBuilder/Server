@@ -26,6 +26,8 @@ services:
 
   # Backend API Service (Node.js/Express)
   server:
+    profiles:
+      - production
     image: ghcr.io/sigmabuilder/server:latest
     container_name: sigmabuilder_server
     restart: unless-stopped
@@ -49,4 +51,3 @@ volumes:
 
 networks:
   sigmanet:
-    external: true

@@ -64,7 +64,7 @@ const inviteUser = async (projectId, inviterId, email, roleId) => {
   });
 
   // 6. Enviar correo
-  const inviteUrl = `${env.cors.origin}/invite?token=${token}`;
+  const inviteUrl = `${env.clientUrl}/invite?token=${token}`;
   
   await emailService.sendMail(
     email,
