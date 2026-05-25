@@ -17,6 +17,11 @@ const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 
+// Trust proxy (Nginx) in production for correct IP rate-limiting
+if (env.isProduction) {
+  app.set('trust proxy', 1);
+}
+
 // Aplicamos Helmet para asegurar la protección de la API.
 app.use(helmet());
 

@@ -21,7 +21,7 @@ const db = knex({
     database: env.db.database,
     user:     env.db.user,
     password: env.db.password,
-    ...(env.isProduction ? { ssl: { rejectUnauthorized: false } } : {}),
+    ...(env.isProduction && process.env.DB_SSL !== 'false' ? { ssl: { rejectUnauthorized: false } } : {}),
   },
 });
 
