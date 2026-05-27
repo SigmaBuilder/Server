@@ -1,10 +1,11 @@
 /* Controladores de rutas de projects. */
 
-'use strict';
+"use strict";
 
-const projectsService = require('./projects.service');
-const { sendSuccess } = require('../../../utils/response');
-const HTTP_STATUS = require('../../../constants/httpStatus');
+const projectsService = require("./projects.service");
+const { sendSuccess } = require("../../../utils/response");
+const HTTP_STATUS = require("../../../constants/httpStatus");
+const AppError = require("../../../utils/AppError");
 
 /**
  * Obtiene todos los proyectos de un usuario.
@@ -16,7 +17,9 @@ const getAll = async (req, res, next) => {
   try {
     const projects = await projectsService.getProjectsForUser(req.user.id);
     sendSuccess(res, { projects });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -29,7 +32,9 @@ const getOne = async (req, res, next) => {
   try {
     const project = await projectsService.getProjectById(req.params.projectId);
     sendSuccess(res, { project });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -39,10 +44,20 @@ const getOne = async (req, res, next) => {
  * @param {Function} next - Función para pasar al siguiente middleware.
  */
 const create = async (req, res, next) => {
+  if (
+    req.body.description.includes("TEST") ||
+    req.body.description.includes("PRUEBA")
+  ) {
+    return next(
+      new AppError("Modo pruebas denegado", HTTP_STATUS.UNPROCESSABLE_ENTITY),
+    );
+  }
   try {
     const project = await projectsService.createProject(req.body, req.user.id);
     sendSuccess(res, { project }, HTTP_STATUS.CREATED);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -53,9 +68,14 @@ const create = async (req, res, next) => {
  */
 const update = async (req, res, next) => {
   try {
-    const project = await projectsService.updateProject(req.params.projectId, req.body);
+    const project = await projectsService.updateProject(
+      req.params.projectId,
+      req.body,
+    );
     sendSuccess(res, { project });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -68,7 +88,9 @@ const remove = async (req, res, next) => {
   try {
     await projectsService.deleteProject(req.params.projectId);
     sendSuccess(res, null, HTTP_STATUS.NO_CONTENT);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 module.exports = { getAll, getOne, create, update, remove };
