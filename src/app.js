@@ -48,8 +48,10 @@ app.use('/api/v1', v1Router);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(env.port, () => {
-  logger.info(`SigmaBuilder Server running`, { port: env.port, env: env.nodeEnv });
-});
+if (require.main === module) {
+  app.listen(env.port, () => {
+    logger.info(`SigmaBuilder Server running`, { port: env.port, env: env.nodeEnv });
+  });
+}
 
 module.exports = app;
