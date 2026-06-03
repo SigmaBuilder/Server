@@ -3,7 +3,7 @@
 'use strict';
 
 const db = require('../../../config/db');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const AppError = require('../../../utils/AppError');
 const HTTP_STATUS = require('../../../constants/httpStatus');
 const emailService = require('../../../services/email.service');
@@ -50,7 +50,7 @@ const inviteUser = async (projectId, inviterId, email, roleId) => {
   const inviter = await db('users').where({ id: inviterId }).first();
 
   // 5. Crear token e insertar en base de datos
-  const token = uuidv4(); // Para invitaciones, el token es el ID directo, o podemos usar un token plano
+  const token = crypto.randomUUID(); // Para invitaciones, el token es el ID directo, o podemos usar un token plano
   const expiresAt = new Date(Date.now() + INVITATION_EXPIRES_IN_MS);
 
   await db('project_invitations').insert({

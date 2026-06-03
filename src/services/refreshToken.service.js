@@ -8,7 +8,7 @@ const { sha256 }    = require('../utils/hash');
 const AppError      = require('../utils/AppError');
 const logger        = require('../utils/logger');
 const HTTP_STATUS   = require('../constants/httpStatus');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 /**
  * Extrae los milisegundos de expiración del token de refresco.
@@ -32,7 +32,7 @@ const getRefreshExpiresMs = () => {
  * @returns {Promise<{ rawToken: string, tokenId: string }>}
  */
 const create = async (userId, meta = {}) => {
-  const family    = meta.family ?? uuidv4();
+  const family    = meta.family ?? crypto.randomUUID();
   const rawToken  = signRefreshToken({ id: userId });
   const tokenHash = sha256(rawToken);
   const expiresAt = new Date(Date.now() + getRefreshExpiresMs());

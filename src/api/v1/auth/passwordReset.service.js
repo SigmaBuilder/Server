@@ -3,7 +3,7 @@
 'use strict';
 
 const db = require('../../../config/db');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const { sha256 } = require('../../../utils/hash');
 const bcrypt = require('bcryptjs');
 const AppError = require('../../../utils/AppError');
@@ -33,7 +33,7 @@ const requestPasswordReset = async (email) => {
   }
 
   // Generamos el token
-  const token = uuidv4();
+  const token = crypto.randomUUID();
   const tokenHash = sha256(token);
   const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRES_IN_MS);
 

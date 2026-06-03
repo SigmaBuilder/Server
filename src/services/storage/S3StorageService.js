@@ -1,7 +1,7 @@
 'use strict';
 
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const path = require('path');
 const StorageProvider = require('./StorageProvider');
 const env = require('../../config/env');
@@ -31,7 +31,7 @@ class S3StorageService extends StorageProvider {
   async uploadFile(fileBuffer, fileName, mimeType, options = {}) {
     const ext = path.extname(fileName);
     const prefix = options.prefix ? `${options.prefix.replace(/^\/+|\/+$/g, '')}/` : '';
-    const key = `${prefix}${uuidv4()}${ext}`; // Generate unique key
+    const key = `${prefix}${crypto.randomUUID()}${ext}`; // Generate unique key
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
