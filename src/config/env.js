@@ -26,10 +26,9 @@ const REQUIRED_VARS = [
 // Verificamos que todas las variables requeridas estén definidas.
 const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
 if (missing.length > 0) {
-  console.error(
-    `\n[FATAL] Missing required environment variables:\n  ${missing.join("\n  ")}\n`,
-  );
-  process.exit(1);
+  const errorMsg = `[FATAL] Missing required environment variables: ${missing.join(", ")}`;
+  console.error(errorMsg);
+  throw new Error(errorMsg);
 }
 
 // Creamos el objeto de configuración con todas las variables.
