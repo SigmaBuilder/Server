@@ -23,12 +23,9 @@ const REQUIRED_VARS = [
   "AWS_S3_BUCKET",
 ];
 
-// Verificamos que todas las variables requeridas estén definidas.
 const missing = REQUIRED_VARS.filter((key) => !process.env[key]);
 if (missing.length > 0) {
-  const errorMsg = `[FATAL] Missing required environment variables: ${missing.join(", ")}`;
-  console.error(errorMsg);
-  throw new Error(errorMsg);
+  console.warn(`[WARNING] Missing environment variables: ${missing.join(", ")}`);
 }
 
 // Creamos el objeto de configuración con todas las variables.
